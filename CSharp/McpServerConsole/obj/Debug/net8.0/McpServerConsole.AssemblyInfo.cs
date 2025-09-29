@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("UnitTest")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("McpServerConsole")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b5e1a4212eb08a855d2ae59f21da36e15ee6e9a9")]
-[assembly: System.Reflection.AssemblyProductAttribute("UnitTest")]
-[assembly: System.Reflection.AssemblyTitleAttribute("UnitTest")]
+[assembly: System.Reflection.AssemblyProductAttribute("McpServerConsole")]
+[assembly: System.Reflection.AssemblyTitleAttribute("McpServerConsole")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // 由 MSBuild WriteCodeFragment 类生成。
