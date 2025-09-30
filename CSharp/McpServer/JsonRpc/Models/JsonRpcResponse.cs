@@ -16,7 +16,10 @@ namespace JsonRpc.Models
         [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
         public JsonRpcError Error { get; set; }
 
+        [JsonIgnore]
         public bool IsError => Error != null;
+
+        [JsonIgnore]
         public bool IsSuccess => Error == null;
     }
 }

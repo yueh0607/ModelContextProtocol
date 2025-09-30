@@ -32,6 +32,9 @@ namespace McpServerLib.Mcp.Models
         [JsonProperty("serverInfo")]
         public ServerInfo ServerInfo { get; set; }
 
+        [JsonProperty("instructions", NullValueHandling = NullValueHandling.Ignore)]
+        public string Instructions { get; set; }
+
         public InitializeResponse()
         {
             ProtocolVersion = "2024-11-05";
@@ -110,6 +113,9 @@ namespace McpServerLib.Mcp.Models
     {
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("title", NullValueHandling = NullValueHandling.Ignore)]
+        public string Title { get; set; }
 
         [JsonProperty("version")]
         public string Version { get; set; }

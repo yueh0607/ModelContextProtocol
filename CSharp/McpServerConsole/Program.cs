@@ -27,11 +27,17 @@ namespace McpServerConsole
 
                     // 创建 MCP 服务器
                     McpServer server = new McpServer(transport);
+                    McpLogger.Debug("开始注册 BasicTools 工具类");
                     server.RegisterToolClass<BasicTools>();
                     McpLogger.Debug("MCP 服务器已创建并注册工具类");
 
+                    // 测试工具注册
+                    var toolCount = server.GetToolCount();
+                    McpLogger.Debug("工具注册测试完成，工具总数: {0}", toolCount);
+
                     // 设置服务器信息
-                    server.SetServerInfo("C# MCP Server Console", "1.0.0");
+                    server.SetServerInfo("mcp-server-csharp", "1.0.0", "C# MCP Server Console");
+                    McpLogger.Debug("服务器信息已设置");
 
                     // 处理错误事件
                     server.ErrorOccurred += (sender, ex) =>

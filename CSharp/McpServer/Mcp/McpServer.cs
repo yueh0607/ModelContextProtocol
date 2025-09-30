@@ -49,6 +49,13 @@ namespace McpServerLib.Mcp
             _serverInfo.Version = version;
         }
 
+        public void SetServerInfo(string name, string version, string title = null)
+        {
+            _serverInfo.Name = name;
+            _serverInfo.Version = version;
+            _serverInfo.Title = title;
+        }
+
         public void RegisterToolClass<T>(T instance) where T : class
         {
             McpLogger.Debug("注册工具类实例: {0}", typeof(T).Name);
@@ -73,6 +80,13 @@ namespace McpServerLib.Mcp
                 throw new ArgumentNullException(nameof(resource));
 
             _resources[resource.Uri] = resource;
+        }
+
+        public int GetToolCount()
+        {
+            var tools = _toolRegistry.GetAllTools();
+            McpLogger.Debug("GetToolCount: 当前注册了 {0} 个工具", tools?.Count ?? 0);
+            return tools?.Count ?? 0;
         }
 
         public void UnregisterResource(string uri)
