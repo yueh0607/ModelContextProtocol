@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using JsonRpc.Server;
 using JsonRpc.Transport;
 using McpServerLib.Mcp.Models;
+using McpServerLib.Utils;
 
 namespace McpServerLib.Mcp
 {
@@ -50,16 +51,19 @@ namespace McpServerLib.Mcp
 
         public void RegisterToolClass<T>(T instance) where T : class
         {
+            McpLogger.Debug("注册工具类实例: {0}", typeof(T).Name);
             _toolRegistry.RegisterToolClass(instance);
         }
 
         public void RegisterToolClass<T>() where T : class, new()
         {
+            McpLogger.Debug("注册工具类类型: {0}", typeof(T).Name);
             _toolRegistry.RegisterToolClass<T>();
         }
 
         public void RegisterToolClass(Type type)
         {
+            McpLogger.Debug("注册工具类类型: {0}", type.Name);
             _toolRegistry.RegisterToolClass(type);
         }
 
@@ -79,6 +83,7 @@ namespace McpServerLib.Mcp
         private void RegisterMcpMethods()
         {
             _jsonRpcServer.RegisterMethod<InitializeRequest>("initialize", HandleInitialize);
+            _jsonRpcServer.RegisterMethod("notifications/initialized", HandleInitialized);
             _jsonRpcServer.RegisterMethod("tools/list", HandleToolsList);
             _jsonRpcServer.RegisterMethod<CallToolRequest>("tools/call", HandleToolsCall);
             _jsonRpcServer.RegisterMethod("resources/list", HandleResourcesList);
@@ -88,19 +93,33 @@ namespace McpServerLib.Mcp
 
         private Task<object> HandleInitialize(InitializeRequest request, CancellationToken cancellationToken)
         {
+            // 使用客户端请求的协议版本，如果不支持则使用默认版本
+            var protocolVersion = request?.ProtocolVersion ?? "2024-11-05";
+
             var response = new InitializeResponse
             {
-                ProtocolVersion = "2024-11-05",
+                ProtocolVersion = protocolVersion,
                 Capabilities = _capabilities,
                 ServerInfo = _serverInfo
             };
             return Task.FromResult<object>(response);
         }
 
+        private Task<object> HandleInitialized(object parameters, CancellationToken cancellationToken)
+        {
+            McpLogger.Debug("收到 initialized 通知，MCP 服务器初始化完成");
+            // 这是一个通知，不需要返回响应
+            // 在这里可以进行初始化完成后的设置
+            return Task.FromResult<object>(null);
+        }
+
         private Task<object> HandleToolsList(object parameters, CancellationToken cancellationToken)
         {
+            McpLogger.Debug("处理 tools/list 请求");
             var tools = _toolRegistry.GetAllTools();
+            McpLogger.Debug("ToolRegistry.GetAllTools() 已调用，详细信息将在 ToolRegistry 中记录");
             var response = new ListToolsResponse { Tools = tools };
+            McpLogger.Debug("返回 {0} 个工具", tools?.Count ?? 0);
             return Task.FromResult<object>(response);
         }
 

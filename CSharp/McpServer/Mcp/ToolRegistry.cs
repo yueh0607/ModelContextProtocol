@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using McpServerLib.Mcp.Attributes;
 using McpServerLib.Mcp.Models;
+using McpServerLib.Utils;
 
 namespace McpServerLib.Mcp
 {
@@ -19,8 +20,10 @@ namespace McpServerLib.Mcp
             if (instance == null)
                 throw new ArgumentNullException(nameof(instance));
 
+            McpLogger.Debug("ToolRegistry: 注册工具类实例 {0}", typeof(T).Name);
             _toolInstances.Add(instance);
             DiscoverTools(instance);
+            McpLogger.Debug("ToolRegistry: 工具发现完成，当前总工具数: {0}", _tools.Count);
         }
 
         public void RegisterToolClass(Type type)
@@ -41,6 +44,7 @@ namespace McpServerLib.Mcp
         private void DiscoverTools(object instance)
         {
             var type = instance.GetType();
+            McpLogger.Debug("ToolRegistry: 开始发现工具，类型: {0}", type.Name);
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
             foreach (var method in methods)
@@ -48,6 +52,8 @@ namespace McpServerLib.Mcp
                 var toolAttribute = method.GetCustomAttribute<McpToolAttribute>();
                 if (toolAttribute == null)
                     continue;
+
+                McpLogger.Debug("ToolRegistry: 发现工具方法 {0}.{1} -> 工具名称: {2}", type.Name, method.Name, toolAttribute.Name);
 
                 var toolInfo = new ToolMethodInfo
                 {
@@ -58,6 +64,7 @@ namespace McpServerLib.Mcp
                 };
 
                 _tools[toolAttribute.Name] = toolInfo;
+                McpLogger.Debug("ToolRegistry: 工具已注册: {0}", toolAttribute.Name);
             }
         }
 
@@ -127,7 +134,9 @@ namespace McpServerLib.Mcp
 
         public List<Tool> GetAllTools()
         {
-            return _tools.Values.Select(t => t.Tool).ToList();
+            var tools = _tools.Values.Select(t => t.Tool).ToList();
+            McpLogger.Debug("GetAllTools 返回 {0} 个工具: {1}", tools.Count, string.Join(", ", tools.Select(t => t.Name)));
+            return tools;
         }
 
         public async Task<CallToolResponse> ExecuteToolAsync(string toolName, Dictionary<string, object> arguments, CancellationToken cancellationToken = default)

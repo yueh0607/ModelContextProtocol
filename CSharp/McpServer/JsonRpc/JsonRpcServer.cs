@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc.Models;
 using JsonRpc.Transport;
+using McpServerLib.Utils;
 
 namespace JsonRpc.Server
 {
@@ -99,9 +100,15 @@ namespace JsonRpc.Server
         {
             try
             {
+                McpLogger.Debug("JsonRpcServer 收到消息: {0}", e.MessageJson);
                 var request = e.Deserialize<JsonRpcRequest>();
                 if (request == null)
+                {
+                    McpLogger.Warning("无法反序列化请求");
                     return;
+                }
+
+                McpLogger.Debug("处理 JSON-RPC 请求: Method={0}, Id={1}", request.Method, request.Id);
 
                 // Fire event for request received
                 RequestReceived?.Invoke(this, request);
@@ -111,6 +118,7 @@ namespace JsonRpc.Server
             }
             catch (Exception ex)
             {
+                McpLogger.Error("处理接收到的消息时发生错误", ex);
                 OnErrorOccurred(ex);
             }
         }
@@ -119,9 +127,12 @@ namespace JsonRpc.Server
         {
             try
             {
+                McpLogger.Debug("开始处理请求: Method={0}, Id={1}", request.Method, request.Id);
+
                 // Validate request
                 if (string.IsNullOrWhiteSpace(request.Method))
                 {
+                    McpLogger.Warning("请求方法名为空");
                     if (!request.IsNotification)
                     {
                         await SendErrorResponseAsync(request.Id, JsonRpcErrorCodes.InvalidRequest, "Method name is required");
@@ -132,6 +143,7 @@ namespace JsonRpc.Server
                 // Check if method is registered
                 if (!_methodHandlers.TryGetValue(request.Method, out var handler))
                 {
+                    McpLogger.Warning(string.Format("未找到方法处理器: {0}", request.Method));
                     if (!request.IsNotification)
                     {
                         await SendErrorResponseAsync(request.Id, JsonRpcErrorCodes.MethodNotFound, $"Method '{request.Method}' not found");
@@ -139,10 +151,13 @@ namespace JsonRpc.Server
                     return;
                 }
 
+                McpLogger.Debug("找到方法处理器，开始执行: {0}", request.Method);
+
                 // Execute method
                 try
                 {
                     var result = await handler(request.Params, cancellationToken);
+                    McpLogger.Debug("方法执行完成: {0}, 结果类型: {1}", request.Method, result?.GetType()?.Name ?? "null");
 
                     // Send response only for requests (not notifications)
                     if (!request.IsNotification)
@@ -153,11 +168,14 @@ namespace JsonRpc.Server
                             Result = result
                         };
 
+                        McpLogger.Debug("发送响应: Id={0}", request.Id);
                         await _transport.SendAsync(response, cancellationToken);
+                        McpLogger.Debug("响应已发送: Id={0}", request.Id);
                     }
                 }
                 catch (JsonRpcException rpcEx)
                 {
+                    McpLogger.Error(string.Format("JSON-RPC 异常: {0}", rpcEx.Error.Message));
                     if (!request.IsNotification)
                     {
                         await SendErrorResponseAsync(request.Id, rpcEx.Error.Code, rpcEx.Error.Message, rpcEx.Error.Data);
@@ -165,6 +183,7 @@ namespace JsonRpc.Server
                 }
                 catch (Exception ex)
                 {
+                    McpLogger.Error("执行方法时发生异常: {0}", ex);
                     if (!request.IsNotification)
                     {
                         await SendErrorResponseAsync(request.Id, JsonRpcErrorCodes.InternalError, "Internal error", ex.Message);
@@ -174,6 +193,7 @@ namespace JsonRpc.Server
             }
             catch (Exception ex)
             {
+                McpLogger.Error("处理请求时发生异常", ex);
                 OnErrorOccurred(ex);
             }
         }

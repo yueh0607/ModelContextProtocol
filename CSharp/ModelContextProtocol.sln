@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpServer", "McpServer\McpS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{D9F0954A-ECE0-45A7-8ABB-C3EF2338CB08}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpServerConsole", "McpServerConsole\McpServerConsole.csproj", "{5D814579-992B-424B-93CD-B62854CD1C94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D9F0954A-ECE0-45A7-8ABB-C3EF2338CB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9F0954A-ECE0-45A7-8ABB-C3EF2338CB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9F0954A-ECE0-45A7-8ABB-C3EF2338CB08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D814579-992B-424B-93CD-B62854CD1C94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D814579-992B-424B-93CD-B62854CD1C94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D814579-992B-424B-93CD-B62854CD1C94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D814579-992B-424B-93CD-B62854CD1C94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
