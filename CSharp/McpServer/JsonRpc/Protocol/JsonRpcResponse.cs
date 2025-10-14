@@ -24,6 +24,6 @@ namespace JsonRpc.Protocol
         /// 此属性包含服务器响应 JSON-RPC 方法请求返回的结果数据。
         /// </remarks>
         [JsonProperty("result")]
-        public JToken Result { get; set; }
+        public JObject Result { get; set; }
     }
 }

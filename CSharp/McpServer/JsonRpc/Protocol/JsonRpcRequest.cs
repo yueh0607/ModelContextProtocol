@@ -25,7 +25,7 @@ namespace JsonRpc.Protocol
         /// 该方法的可选参数。
         /// </summary>
         [JsonProperty("params")]
-        public JToken Params { get; set; }
+        public JObject Params { get; set; }
         
         /// <summary>
         /// 创建一个带新的 Id 的 Request 副本
