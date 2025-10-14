@@ -23,6 +23,6 @@ namespace JsonRpc.Protocol
         /// 获取或设置 Notification 的可选参数。
         /// </summary>
         [JsonProperty("params")]
-        public JToken Params { get; set; }
+        public JObject Params { get; set; }
     }
 }
