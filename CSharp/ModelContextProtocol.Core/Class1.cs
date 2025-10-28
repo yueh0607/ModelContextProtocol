@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ModelContextProtocol.Core
+namespace ModelContextProtocol
 {
     public class Class1
     {
