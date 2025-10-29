@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MapleModelContextProtocol.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -131,6 +132,6 @@ namespace MapleModelContextProtocol.Protocol
         /// 获取或设置与此元数据对应的可调用服务器工具（如果有）。
         /// </summary>
         [JsonIgnore]
-        public McpServerTool? McpServerTool { get; set; }
+        public McpServerTool McpServerTool { get; set; }
     }
 }

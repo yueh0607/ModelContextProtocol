@@ -145,13 +145,13 @@ namespace MapleModelContextProtocol.Server
         /// </remarks>
         public JsonSerializerSettings SerializerOptions { get; set; }
 
-        /// <summary>
-        /// 从方法创建 <see cref="AIFunction"/> 时获取或设置 JSON 模式选项。
-        /// </summary>
-        /// <remarks>
-        /// 如果未指定，则默认为 <see cref="AIJsonSchemaCreateOptions.Default"/>。
-        /// </remarks>
-        public AIJsonSchemaCreateOptions? SchemaCreateOptions { get; set; }
+        // /// <summary>
+        // /// 从方法创建 <see cref="AIFunction"/> 时获取或设置 JSON 模式选项。
+        // /// </summary>
+        // /// <remarks>
+        // /// 如果未指定，则默认为 <see cref="AIJsonSchemaCreateOptions.Default"/>。
+        // /// </remarks>
+        // public AIJsonSchemaCreateOptions? SchemaCreateOptions { get; set; }
 
         /// <summary>
         /// 获取或设置与工具关联的元数据。
@@ -186,7 +186,7 @@ namespace MapleModelContextProtocol.Server
                 ReadOnly = ReadOnly,
                 UseStructuredContent = UseStructuredContent,
                 SerializerOptions = SerializerOptions,
-                SchemaCreateOptions = SchemaCreateOptions,
+                // SchemaCreateOptions = SchemaCreateOptions,
                 Metadata = Metadata,
                 Icons = Icons,
             };

@@ -164,70 +164,39 @@ namespace MapleModelContextProtocol.Server
             RequestContext<CallToolRequestParams> request,
             CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// 为通过 <see cref="Delegate"/> 实例指定的方法创建 <see cref="McpServerTool"/> 实例。
-        /// </summary>
-        /// <param name="method">
-        /// 通过创建的 <see cref="McpServerTool"/> 表示的方法。
-        /// </param>
-        /// <param name="options">
-        /// 在创建 <see cref="McpServerTool"/> 时使用的可选选项，用于控制其行为。
-        /// </param>
-        /// <returns>
-        /// 用于调用 <paramref name="method"/> 的已创建的 <see cref="McpServerTool"/>。
-        /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="method"/> 为 <see langword="null"/>。</exception>
-        public static McpServerTool Create(
-            Delegate method,
-            McpServerToolCreateOptions? options = null) =>
-            AIFunctionMcpServerTool.Create(method, options);
-
-        /// <summary>
-        /// 为通过 <see cref="Delegate"/> 实例指定的方法创建 <see cref="McpServerTool"/> 实例。
-        /// </summary>
-        /// <param name="method">通过创建的 <see cref="McpServerTool"/> 表示的方法。</param>
-        /// <param name="target">如果 <paramref name="method"/> 是实例方法，则为该实例；否则，<see langword="null"/>。</param>
-        /// <param name="options">创建 <see cref="McpServerTool"/> 时使用的可选选项，用于控制其行为。</param>
-        /// <returns>用于调用 <paramref name="method"/> 而创建的 <see cref="McpServerTool"/>。</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="method"/> 为 <see langword="null"/>。</exception>
-        /// <exception cref="ArgumentException"><paramref name="method"/> 是实例方法，但 <paramref name="target"/> 为 <see langword="null"/>。</exception>
-        public static McpServerTool Create(
-            MethodInfo method,
-            object target = null,
-            McpServerToolCreateOptions? options = null) =>
-            AIFunctionMcpServerTool.Create(method, target, options);
-
-        /// <summary>
-        /// 为某个方法创建一个 <see cref="McpServerTool"/> 实例，该方法通过 <see cref="MethodInfo"/> 指定，
-        /// 以及实例方法，同时创建一个 <see cref="Type"/> 实例，该实例表示每次调用该方法时要实例化的目标对象的类型。
-        /// </summary>
-        /// <param name="method">通过创建的 <see cref="AIFunction"/> 表示的实例方法。</param>
-        /// <param name="createTargetFunc">
-        /// 每次函数调用时使用的回调，用于创建实例方法 <paramref name="method"/> 所针对类型的实例。
-        /// 如果返回的实例是 <see cref="IAsyncDisposable"/> 或 <see cref="IDisposable"/>，则它将在
-        /// 方法调用完成后被销毁。
-        /// </param>
-        /// <param name="options">创建 <see cref="McpServerTool"/> 时使用的可选选项，用于控制其行为。</param>
-        /// <returns>已创建用于调用 <paramref name="method"/> 的 <see cref="AIFunction"/>。</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="method"/> 为 <see langword="null"/>。</exception>
-        public static McpServerTool Create(
-            MethodInfo method,
-            Func<RequestContext<CallToolRequestParams>, object> createTargetFunc,
-            McpServerToolCreateOptions? options = null) =>
-            AIFunctionMcpServerTool.Create(method, createTargetFunc, options);
-
-        /// <summary>创建一个 <see cref="McpServerTool"/> 来包装指定的 <see cref="AIFunction"/>。</summary>
-        /// <param name="function">要包装的函数。</param>
-        /// <param name="options">在创建 <see cref="McpServerTool"/> 时使用的可选选项，用于控制其行为。</param>
-        /// <exception cref="ArgumentNullException"><paramref name="function"/> 为 <see langword="null"/>。</exception>
-        /// <remarks>
-        /// 与 Create 的其他重载不同，由 <see cref="Create(AIFunction, McpServerToolCreateOptions)"/> 创建的 <see cref="McpServerTool"/>
-        /// 不提供针对 MCP 特定概念（例如 <see cref="McpServer"/>）的所有特殊参数处理。
-        /// </remarks>
-        public static McpServerTool Create(
-            AIFunction function,
-            McpServerToolCreateOptions? options = null) =>
-            AIFunctionMcpServerTool.Create(function, options);
+        // /// <summary>
+        // /// 为通过 <see cref="Delegate"/> 实例指定的方法创建 <see cref="McpServerTool"/> 实例。
+        // /// </summary>
+        // /// <param name="method">
+        // /// 通过创建的 <see cref="McpServerTool"/> 表示的方法。
+        // /// </param>
+        // /// <param name="options">
+        // /// 在创建 <see cref="McpServerTool"/> 时使用的可选选项，用于控制其行为。
+        // /// </param>
+        // /// <returns>
+        // /// 用于调用 <paramref name="method"/> 的已创建的 <see cref="McpServerTool"/>。
+        // /// </returns>
+        // /// <exception cref="ArgumentNullException"><paramref name="method"/> 为 <see langword="null"/>。</exception>
+        // public static McpServerTool Create(
+        //     Delegate method,
+        //     McpServerToolCreateOptions options = null) =>
+        //     AIFunctionMcpServerTool.Create(method, options);
+        //
+        // /// <summary>
+        // /// 为通过 <see cref="Delegate"/> 实例指定的方法创建 <see cref="McpServerTool"/> 实例。
+        // /// </summary>
+        // /// <param name="method">通过创建的 <see cref="McpServerTool"/> 表示的方法。</param>
+        // /// <param name="target">如果 <paramref name="method"/> 是实例方法，则为该实例；否则，<see langword="null"/>。</param>
+        // /// <param name="options">创建 <see cref="McpServerTool"/> 时使用的可选选项，用于控制其行为。</param>
+        // /// <returns>用于调用 <paramref name="method"/> 而创建的 <see cref="McpServerTool"/>。</returns>
+        // /// <exception cref="ArgumentNullException"><paramref name="method"/> 为 <see langword="null"/>。</exception>
+        // /// <exception cref="ArgumentException"><paramref name="method"/> 是实例方法，但 <paramref name="target"/> 为 <see langword="null"/>。</exception>
+        // public static McpServerTool Create(
+        //     MethodInfo method,
+        //     object target = null,
+        //     McpServerToolCreateOptions options = null) =>
+        //     AIFunctionMcpServerTool.Create(method, target, options);
+        
 
         /// <inheritdoc />
         public override string ToString() => ProtocolTool.Name;
