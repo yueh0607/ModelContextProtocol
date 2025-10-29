@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// JSON-RPC 协议中的请求消息（Request）。

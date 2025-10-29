@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Newtonsoft.Json;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     [JsonConverter(typeof(RequestIdNewtonsoftConverter))]
     public readonly struct RequestId : IEquatable<RequestId>

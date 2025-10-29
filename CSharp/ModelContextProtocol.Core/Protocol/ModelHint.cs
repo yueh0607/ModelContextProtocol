@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 提供用于模型选择的提示。

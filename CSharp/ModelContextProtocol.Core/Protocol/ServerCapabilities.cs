@@ -1,4 +1,4 @@
-﻿namespace ModelContextProtocol.Protocol
+﻿namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示服务器可能支持的功能。

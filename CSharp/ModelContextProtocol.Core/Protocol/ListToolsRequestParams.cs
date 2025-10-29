@@ -1,4 +1,4 @@
-﻿namespace ModelContextProtocol.Protocol
+﻿namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端通过 <see cref="RequestMethods.ToolsList"/> 请求获取服务器可用工具列表时使用的参数。

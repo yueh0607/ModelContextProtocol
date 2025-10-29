@@ -1,7 +1,7 @@
 ﻿using System;
-using ModelContextProtocol.Protocol;
+using MapleModelContextProtocol.Protocol;
 
-namespace ModelContextProtocol.Client
+namespace MapleModelContextProtocol.Client
 {
     /// <summary>
     /// 提供用于创建 <see cref="McpClient"/> 实例的配置选项。

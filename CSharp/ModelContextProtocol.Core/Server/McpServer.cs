@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ModelContextProtocol.Protocol;
+using MapleModelContextProtocol.Protocol;
 
-namespace ModelContextProtocol.Server
+namespace MapleModelContextProtocol.Server
 {
     public abstract partial class McpServer
     {

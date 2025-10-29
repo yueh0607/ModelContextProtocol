@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ModelContextProtocol
+namespace MapleModelContextProtocol
 {
     public class Class1
     {

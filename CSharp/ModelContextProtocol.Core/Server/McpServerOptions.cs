@@ -1,4 +1,4 @@
-﻿namespace ModelContextProtocol.Server
+﻿namespace MapleModelContextProtocol.Server
 {
     // TODO: 整个类还没有实现，涉及到完整的 McpServer 体系实现
     public sealed class McpServerOptions

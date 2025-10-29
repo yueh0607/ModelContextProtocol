@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 为所有 request parameters 提供基类。

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
-namespace ModelContextProtocol
+namespace MapleModelContextProtocol
 {
     /// <summary>
     /// 提供在 MCP 场景下使用 Newtonsoft.Json 的统一序列化设置与辅助方法。

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端对服务器端 <see cref="RequestMethods.SamplingCreateMessage"/> 的响应。

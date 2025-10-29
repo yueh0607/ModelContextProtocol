@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using ModelContextProtocol.Protocol;
+using MapleModelContextProtocol.Protocol;
 using Newtonsoft.Json;
 
-namespace ModelContextProtocol.Server
+namespace MapleModelContextProtocol.Server
 {
     /// <summary>
     /// 提供用于控制 <see cref="McpServerTool"/> 创建的选项。

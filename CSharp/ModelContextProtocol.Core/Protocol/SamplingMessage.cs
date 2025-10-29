@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示在模型上下文协议中向 LLM API 发送或从 LLM API 接收的消息。

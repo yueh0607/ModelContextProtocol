@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using ModelContextProtocol.Protocol;
+using MapleModelContextProtocol.Protocol;
 
-namespace ModelContextProtocol.Server
+namespace MapleModelContextProtocol.Server
 {
     /// <summary>
     /// 为创建MCP服务器时使用的处理程序提供容器。

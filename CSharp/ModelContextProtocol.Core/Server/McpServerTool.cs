@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ModelContextProtocol.Protocol;
+using MapleModelContextProtocol.Protocol;
 
-namespace ModelContextProtocol.Server
+namespace MapleModelContextProtocol.Server
 {
     
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace ModelContextProtocol.Protocol
+﻿namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 提供 MCP 协议中常用通知方法的名称常量。

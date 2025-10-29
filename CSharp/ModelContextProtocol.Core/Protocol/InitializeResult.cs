@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示在建立连接期间向服务器发送 <see cref="RequestMethods.Initialize"/> 请求的结果。

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ModelContextProtocol.Server
+namespace MapleModelContextProtocol.Server
 {
     /// <summary>
     /// 表示 MCP 服务器原语，例如工具或提示。

@@ -1,4 +1,4 @@
-﻿namespace ModelContextProtocol.Server
+﻿namespace MapleModelContextProtocol.Server
 {
     /// <summary>
     /// 提供一个上下文容器，用于访问客户端请求参数和请求的资源。

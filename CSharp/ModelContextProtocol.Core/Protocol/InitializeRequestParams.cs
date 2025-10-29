@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ModelContextProtocol.Protocol
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示在协议握手期间，客户端向服务器发送的 <see cref="RequestMethods.Initialize"/> 请求所使用的参数。

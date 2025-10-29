@@ -1,4 +1,4 @@
-﻿namespace ModelContextProtocol
+﻿namespace MapleModelContextProtocol
 {
     /// <summary>提供可使用 <see cref="IProgress{ProgressNotificationValue}"/> 发送的进度值。</summary>
     public class ProgressNotificationValue
