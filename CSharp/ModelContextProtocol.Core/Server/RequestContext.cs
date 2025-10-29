@@ -1,8 +1,9 @@
-﻿namespace MapleModelContextProtocol.Server
+﻿using System.Collections.Generic;
+
+namespace MapleModelContextProtocol.Server
 {
     /// <summary>
     /// 提供一个上下文容器，用于访问客户端请求参数和请求的资源。
-    /// TODO: 整个类还没有实现，涉及到完整的 McpServer 体系实现
     /// </summary>
     /// <typeparam name="TParams">每个 MCP 操作特定的请求参数类型。</typeparam>
     /// <remarks>
@@ -12,6 +13,13 @@
     /// </remarks>
     public sealed class RequestContext<TParams>
     {
+        /// <summary>获取或设置与此请求关联的参数。</summary>
+        public TParams Params { get; set; }
+        
+        /// <summary>
+        /// 获取或设置一个键值对集合，可用于在此请求的作用域内共享数据。
+        /// </summary>
+        public IDictionary<string, object> Items { get; set; }
         // // <summary>与此实例关联的服务器。</summary>
         // private McpServer _server;
         //
