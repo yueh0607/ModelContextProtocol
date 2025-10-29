@@ -9,9 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpServerConsole", "McpServerConsole\McpServerConsole.csproj", "{5D814579-992B-424B-93CD-B62854CD1C94}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A131652F-371A-402B-AE3C-5B2DE1C9ABED}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelContextProtocol.Core", "ModelContextProtocol.Core\ModelContextProtocol.Core.csproj", "{F87B68AD-1CD6-471B-BA6E-B5CDE56A75B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelContextProtocol.Unity", "ModelContextProtocol.Unity\ModelContextProtocol.Unity.csproj", "{11BB9759-6327-46D2-83D5-F3BDB657028F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +35,10 @@ Global
 		{F87B68AD-1CD6-471B-BA6E-B5CDE56A75B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F87B68AD-1CD6-471B-BA6E-B5CDE56A75B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F87B68AD-1CD6-471B-BA6E-B5CDE56A75B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11BB9759-6327-46D2-83D5-F3BDB657028F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11BB9759-6327-46D2-83D5-F3BDB657028F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11BB9759-6327-46D2-83D5-F3BDB657028F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11BB9759-6327-46D2-83D5-F3BDB657028F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,6 +47,5 @@ Global
 		SolutionGuid = {0702712A-E003-406F-B0B0-BC88D1F54CDF}
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{F87B68AD-1CD6-471B-BA6E-B5CDE56A75B7} = {A131652F-371A-402B-AE3C-5B2DE1C9ABED}
 	EndGlobalSection
 EndGlobal

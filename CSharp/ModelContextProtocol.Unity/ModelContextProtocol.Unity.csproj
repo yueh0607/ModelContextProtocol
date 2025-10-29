@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>7.3</LangVersion>
+        <!-- 标记为 Unity 包项目 -->
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 引用核心库 -->
+        <ProjectReference Include="..\ModelContextProtocol.Core\ModelContextProtocol.Core.csproj" />
+    </ItemGroup>
+
+    <!-- Unity 引用通过 Unity 环境提供，不在 .csproj 中 -->
+</Project>
