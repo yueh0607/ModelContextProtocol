@@ -43,10 +43,10 @@ namespace MapleModelContextProtocol.Server
         /// </remarks>
         public abstract McpServerOptions ServerOptions { get; }
 
-        /// <summary>
-        /// 获取服务器的服务提供者。
-        /// </summary>
-        public abstract IServiceProvider Services { get; }
+        // /// <summary>
+        // /// 获取服务器的服务提供者。
+        // /// </summary>
+        // public abstract IServiceProvider Services { get; }
 
         /// <summary>
         /// 获取客户端设置的最后一个日志记录级别，如果从未设置，则获取 <see langword="null"/>。

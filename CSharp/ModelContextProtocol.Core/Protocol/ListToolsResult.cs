@@ -3,10 +3,13 @@ using Newtonsoft.Json;
 
 namespace MapleModelContextProtocol.Protocol
 {
-    public class ListToolsResult
+    /// <summary>
+    /// 表示服务器对客户端发出的 <see cref="RequestMethods.ToolsList"/> 请求的响应。
+    /// </summary>
+    public class ListToolsResult : Result
     {
         /// <summary>
-        /// The server's response to a tools/list request from the client.
+        /// 获取或设置可用工具列表。
         /// </summary>
         [JsonProperty("tools")]
         public IList<Tool> Tools { get; set; } = new List<Tool>();

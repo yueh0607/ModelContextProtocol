@@ -1,48 +1,95 @@
-﻿namespace MapleModelContextProtocol.Server
+﻿using System;
+using System.Collections.Generic;
+using MapleModelContextProtocol.Protocol;
+
+namespace MapleModelContextProtocol.Server
 {
-    // TODO: 整个类还没有实现，涉及到完整的 McpServer 体系实现
+    /// <summary>
+    /// 用于配置 MCP 服务器的选项。
+    /// </summary>
     public sealed class McpServerOptions
     {
         private McpServerHandlers _handlers;
 
+        /// <summary>
+        /// 获取或设置此服务器实现的相关信息，包括其名称和版本。
+        /// </summary>
+        /// <remarks>
+        /// 此信息在初始化期间发送给客户端，用于识别服务器。
+        /// 它会显示在客户端日志中，并可用于调试和兼容性检查。
+        /// </remarks>
+        public Implementation ServerInfo { get; set; }
+        
+        /// <summary>
+        /// 获取或设置要通告给客户端的服务器功能。
+        /// </summary>
+        /// <remarks>
+        /// 这些决定了客户端连接时可用的功能。
+        /// 功能可以包括“工具”、“提示”、“资源”、“日志记录”以及其他特定于协议的功能。
+        /// </remarks>
+        public ServerCapabilities Capabilities { get; set; }
+        
+        /// <summary>
+        /// 获取或设置服务器用于处理协议消息的处理程序容器。
+        /// </summary>
+        public McpServerHandlers Handlers 
+        { 
+            get => _handlers ?? new McpServerHandlers();
+            set => _handlers = value ?? throw new ArgumentNullException(nameof(value));
+        }
+        
+        /// <summary>
+        /// 使用基于日期的版本控制方案获取或设置此服务器支持的协议版本。
+        /// </summary>
+        /// <remarks>
+        /// 协议版本定义了此服务器支持的功能和消息格式。
+        /// 使用基于日期的版本控制方案，格式为“YYYY-MM-DD”。
+        /// 如果 <see langword="null"/>，则服务器将向客户端通告客户端请求的版本，
+        /// 如果已知该版本受支持，则服务器将通告客户端请求的版本，否则将通告服务器支持的最新版本。
+        /// </remarks>
+        public string ProtocolVersion { get; set; }
+        
+        /// <summary>
+        /// 获取或设置用于客户端-服务器初始化握手序列的超时时间。
+        /// </summary>
+        /// <remarks>
+        /// 此超时值决定服务器在初始化协议握手期间等待客户端响应的时间长度。
+        /// 若客户端在此时间段内未响应，初始化过程将终止。
+        /// </remarks>
+        public TimeSpan InitializationTimeout { get; set; } = TimeSpan.FromSeconds(60);
+        
+        /// <summary>
+        /// 获取或设置服务器提供的工具集合。
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 通过 <see cref="ToolCollection"/> 指定的工具将与 <see cref="Handlers.ListToolsHandler"/> 和
+        /// <see cref="Handlers.CallToolHandler"/> 配合工作。
+        /// </para>
+        /// <para>
+        /// 对于 <see cref="RequestMethods.ToolsList"/> 请求：服务器返回此集合中的所有工具，
+        /// 以及 <see cref="Handlers.ListToolsHandler"/>（如果已设置）提供的任何额外工具。
+        /// </para>
+        /// <para>
+        /// 对于 <see cref="RequestMethods.ToolsCall"/> 请求：服务器首先在此集合中查找请求的工具。
+        /// 如果未找到，将调用 <see cref="Handlers.CallToolHandler"/>（如果已设置）作为备用。
+        /// </para>
+        /// </remarks>
+        public IList<SimpleMcpServerTool> ToolCollection { get; set; } = new List<SimpleMcpServerTool>();
+
         // /// <summary>
-        // /// 获取或设置此服务器实现的相关信息，包括其名称和版本。
+        // /// 获取或设置服务器提供的工具集合（高级版本，暂不使用）。
         // /// </summary>
         // /// <remarks>
-        // /// 此信息在初始化期间发送给客户端，用于识别服务器。
-        // /// 它会显示在客户端日志中，并可用于调试和兼容性检查。
+        // /// 通过 <see cref="ToolCollection"/> 指定的工具将增强 <see cref="McpServerHandlers.ListToolsHandler"/> 功能，
+        // /// <see cref="McpServerHandlers.CallToolHandler"/>（若存在）。ListTools请求将输出<see cref="ToolCollection"/>中所有工具的信息，
+        // /// 同时输出由<see cref="McpServerHandlers.ListToolsHandler"/>（若非<see langword="null"/>）输出的工具信息。调用工具请求将首先在<see cref="ToolCollection"/>中查找请求的工具，
+        // /// 若未在<see cref="ToolCollection"/>中找到该工具，则调用任何指定的<see cref="McpServerHandlers.CallToolHandler"/>
+        // /// 作为备用方案。
         // /// </remarks>
-        // public Implementation ServerInfo { get; set; }
-        //
-        // /// <summary>
-        // /// 获取或设置要通告给客户端的服务器功能。
-        // /// </summary>
-        // /// <remarks>
-        // /// 这些决定了客户端连接时可用的功能。
-        // /// 功能可以包括“工具”、“提示”、“资源”、“日志记录”以及其他特定于协议的功能。
-        // /// </remarks>
-        // public ServerCapabilities Capabilities { get; set; }
-        //
-        // /// <summary>
-        // /// 使用基于日期的版本控制方案获取或设置此服务器支持的协议版本。
-        // /// </summary>
-        // /// <remarks>
-        // /// 协议版本定义了此服务器支持的功能和消息格式。
-        // /// 使用基于日期的版本控制方案，格式为“YYYY-MM-DD”。
-        // /// 如果 <see langword="null"/>，则服务器将向客户端通告客户端请求的版本，
-        // /// 如果已知该版本受支持，则服务器将通告客户端请求的版本，否则将通告服务器支持的最新版本。
-        // /// </remarks>
-        // public string ProtocolVersion { get; set; }
-        //
-        // /// <summary>
-        // /// Gets or sets a timeout used for the client-server initialization handshake sequence.
-        // /// </summary>
-        // /// <remarks>
-        // /// This timeout determines how long the server will wait for client responses during
-        // /// the initialization protocol handshake. If the client doesn't respond within this timeframe,
-        // /// the initialization process will be aborted.
-        // /// </remarks>
-        // public TimeSpan InitializationTimeout { get; set; } = TimeSpan.FromSeconds(60);
+        // public McpServerPrimitiveCollection<McpServerTool>? ToolCollection { get; set; }
+        
+        
         //
         // /// <summary>
         // /// Gets or sets optional server instructions to send to clients.
@@ -85,32 +132,10 @@
         // /// added will be the outermost (first to execute).
         // /// </remarks>
         // public McpServerFilters Filters { get; } = new();
-        //
-        // /// <summary>
-        // /// Gets or sets the container of handlers used by the server for processing protocol messages.
-        // /// </summary>
-        // public McpServerHandlers Handlers 
-        // { 
-        //     get => _handlers ??= new();
-        //     set
-        //     { 
-        //         Throw.IfNull(value); 
-        //         _handlers = value;
-        //     }
-        // }
-        //
-        // /// <summary>
-        // /// Gets or sets a collection of tools served by the server.
-        // /// </summary>
-        // /// <remarks>
-        // /// Tools specified via <see cref="ToolCollection"/> augment the <see cref="McpServerHandlers.ListToolsHandler"/> and
-        // /// <see cref="McpServerHandlers.CallToolHandler"/>, if provided. ListTools requests will output information about every tool
-        // /// in <see cref="ToolCollection"/> and then also any tools output by <see cref="McpServerHandlers.ListToolsHandler"/>, if it's
-        // /// non-<see langword="null"/>. CallTool requests will first check <see cref="ToolCollection"/> for the tool
-        // /// being requested, and if the tool is not found in the <see cref="ToolCollection"/>, any specified <see cref="McpServerHandlers.CallToolHandler"/>
-        // /// will be invoked as a fallback.
-        // /// </remarks>
-        // public McpServerPrimitiveCollection<McpServerTool>? ToolCollection { get; set; }
+        
+        
+        
+        
         //
         // /// <summary>
         // /// Gets or sets a collection of resources served by the server.

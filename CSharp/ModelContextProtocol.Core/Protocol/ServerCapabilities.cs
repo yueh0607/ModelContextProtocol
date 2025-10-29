@@ -1,4 +1,6 @@
-﻿namespace MapleModelContextProtocol.Protocol
+﻿using Newtonsoft.Json;
+
+namespace MapleModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示服务器可能支持的功能。
@@ -9,11 +11,22 @@
     /// 这些功能在初始化握手期间向客户端公布。
     /// </para>
     /// <para>
-    /// 详情请参阅 <see href="https://github.com/modelcontextprotocol/specification/blob/main/schema/">schema</see>。
+    /// 详情请参阅 <see href="https://github.com/modelcontextprotocol/specification/blob/main/schema/">架构说明</see>。
     /// </para>
     /// </remarks>
     public sealed class ServerCapabilities
     {
+        /// <summary>
+        /// 获取或设置服务器的工具功能，用于列出客户端能够调用的工具。
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 这是 MCP 协议的核心功能之一。如果服务器提供工具，必须设置此属性。
+        /// </para>
+        /// </remarks>
+        [JsonProperty("tools")]
+        public ToolsCapability Tools { get; set; }
+        
         // /// <summary>
         // /// 获取或设置服务器支持的实验性、非标准功能。
         // /// </summary>
@@ -39,20 +52,14 @@
         // /// <summary>
         // /// 获取或设置服务器的提示功能，用于提供客户端可以发现和使用的预定义提示模板。
         // /// </summary>
-        // [JsonPropertyName("prompts")]
+        // [JsonProperty("prompts")]
         // public PromptsCapability? Prompts { get; set; }
         //
         // /// <summary>
         // /// 获取或设置服务器的资源能力，用于提供客户端可以发现和使用的预定义资源。
         // /// </summary>
-        // [JsonPropertyName("resources")]
+        // [JsonProperty("resources")]
         // public ResourcesCapability? Resources { get; set; }
-        //
-        // /// <summary>
-        // /// 获取或设置服务器的工具功能，用于列出客户端能够调用的工具。
-        // /// </summary>
-        // [JsonPropertyName("tools")]
-        // public ToolsCapability? Tools { get; set; }
         //
         // /// <summary>
         // /// 获取或设置服务器的补全功能，以支持参数自动补全建议。

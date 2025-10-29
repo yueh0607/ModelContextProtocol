@@ -9,7 +9,7 @@ namespace MapleModelContextProtocol.Protocol
     /// <remarks>
     /// 详情请参阅<see href="https://github.com/modelcontextprotocol/specification/blob/main/schema/">架构说明</see>。
     /// </remarks>
-    public class ReadResourceResult
+    public class ReadResourceResult : Result
     {
         /// <summary>
         /// 获取或设置本资源包含的<see cref="ResourceContents"/>对象列表。
