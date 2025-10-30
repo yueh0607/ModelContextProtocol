@@ -11,5 +11,9 @@
         <ProjectReference Include="..\ModelContextProtocol.Core\ModelContextProtocol.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Unity3D.SDK" Version="2021.1.14.1" />
+    </ItemGroup>
+
     <!-- Unity 引用通过 Unity 环境提供，不在 .csproj 中 -->
 </Project>

@@ -1,0 +1,21 @@
+{
+  "name": "com.unity.mcp-server",
+  "version": "1.0.0",
+  "displayName": "Unity MCP Server",
+  "description": "Model Context Protocol (MCP) server implementation for Unity. Enables AI assistants to interact with Unity projects.",
+  "unity": "2019.4",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.0.2"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "claude",
+    "server",
+    "tools"
+  ],
+  "author": {
+    "name": "Unity MCP Community"
+  }
+}
