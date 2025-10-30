@@ -71,10 +71,8 @@ namespace MapleModelContextProtocol.Server
                 RequestContext<CallToolRequestParams> request,
                 CancellationToken cancellationToken)
             {
-                // 转换参数为JObject
-                var args = request.Params?.Arguments != null 
-                    ? JObject.FromObject(request.Params.Arguments)
-                    : new JObject();
+                // Arguments 已经是 JObject 类型，直接使用
+                var args = request.Params?.Arguments ?? new JObject();
 
                 // 调用实际的处理方法
                 return await _handler(args, cancellationToken);
@@ -108,10 +106,8 @@ namespace MapleModelContextProtocol.Server
                 RequestContext<CallToolRequestParams> request,
                 CancellationToken cancellationToken)
             {
-                // 转换参数为JObject
-                var args = request.Params?.Arguments != null
-                    ? JObject.FromObject(request.Params.Arguments)
-                    : new JObject();
+                // Arguments 已经是 JObject 类型，直接使用
+                var args = request.Params?.Arguments ?? new JObject();
 
                 // 调用实际的方法
                 return await _method(_target, args, cancellationToken);

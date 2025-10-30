@@ -6,29 +6,27 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MapleModelContextProtocol.Server.Transport;
+using UnityEngine;
 
 namespace ModelContextProtocol.Unity.Runtime.Transport
 {
     /// <summary>
-    /// 基于 HTTP POST 的 IMcpTransport 实现（仅用于 Unity 本地测试）。
-    /// - 每个请求：单条 JSON-RPC 消息（请求体为 JSON），响应：单条 JSON（Response/Error）。
-    /// - 仅支持 POST /，Content-Type: application/json。
-    /// - 单请求-单响应，短连接（响应后关闭）。
-    /// - 简化实现：一次只处理一个挂起请求（足够用于 Editor 环境联调）。
+    /// 修复版：基于 HTTP POST 的 IMcpTransport 实现
+    /// 修复了异步响应时连接过早关闭的问题
     /// </summary>
-    public sealed class UnityHttpTransport : IMcpTransport, IDisposable
+    public sealed class UnityHttpTransportFixed : IMcpTransport, IDisposable
     {
         private readonly int _port;
         private TcpListener _listener;
         private TcpClient _currentClient;
         private NetworkStream _currentStream;
         private StreamWriter _currentWriter;
-        private string _pendingRequestJson; // 挂起的请求 JSON（供 ReadMessageAsync 返回）
-        private readonly SemaphoreSlim _acceptLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _readLock = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
+        private TaskCompletionSource<bool> _writeCompletedTcs;
         private volatile bool _stopped;
 
-        public UnityHttpTransport(int port = 8767)
+        public UnityHttpTransportFixed(int port = 8767)
         {
             _port = port;
         }
@@ -46,31 +44,42 @@ namespace ModelContextProtocol.Unity.Runtime.Transport
             if (_stopped)
                 return null;
 
-            await _acceptLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _readLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                // 接受一个客户端
+                // 接受新连接前，确保上一个连接已完全处理
+                if (_writeCompletedTcs != null)
+                {
+                    await _writeCompletedTcs.Task.ConfigureAwait(false);
+                }
+
+                // 清理上一个连接
+                CleanupConnection();
+
+                // 接受新客户端
                 _currentClient = await _listener.AcceptTcpClientAsync().ConfigureAwait(false);
                 _currentStream = _currentClient.GetStream();
-                var reader = new StreamReader(_currentStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 4096, leaveOpen: true);
-                _currentWriter = new StreamWriter(_currentStream, new UTF8Encoding(false), 4096, leaveOpen: true)
+                var reader = new StreamReader(_currentStream, Encoding.UTF8, false, 4096, true);
+                _currentWriter = new StreamWriter(_currentStream, new UTF8Encoding(false), 4096, true)
                 {
                     NewLine = "\r\n",
                     AutoFlush = true
                 };
 
+                // 创建新的写完成信号
+                _writeCompletedTcs = new TaskCompletionSource<bool>();
+
                 // 读取 HTTP 请求行
                 var requestLine = await reader.ReadLineAsync().ConfigureAwait(false);
                 if (string.IsNullOrEmpty(requestLine) || !requestLine.StartsWith("POST ", StringComparison.OrdinalIgnoreCase))
                 {
-                    await WriteHttpResponseAsync(statusCode: 405, statusText: "Method Not Allowed", body: "Only POST is supported").ConfigureAwait(false);
-                    CleanupConnection();
+                    await WriteHttpResponseAsync(405, "Method Not Allowed", "Only POST is supported").ConfigureAwait(false);
+                    _writeCompletedTcs?.TrySetResult(true);
                     return null;
                 }
 
                 // 读取请求头
                 int contentLength = 0;
-                string contentType = null;
                 string line;
                 while (!string.IsNullOrEmpty(line = await reader.ReadLineAsync().ConfigureAwait(false)))
                 {
@@ -83,17 +92,13 @@ namespace ModelContextProtocol.Unity.Runtime.Transport
                         {
                             int.TryParse(value, out contentLength);
                         }
-                        else if (name.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
-                        {
-                            contentType = value;
-                        }
                     }
                 }
 
                 if (contentLength <= 0)
                 {
                     await WriteHttpResponseAsync(400, "Bad Request", "Missing Content-Length").ConfigureAwait(false);
-                    CleanupConnection();
+                    _writeCompletedTcs?.TrySetResult(true);
                     return null;
                 }
 
@@ -106,33 +111,40 @@ namespace ModelContextProtocol.Unity.Runtime.Transport
                     if (r <= 0) break;
                     read += r;
                 }
-
-                _pendingRequestJson = new string(buf, 0, read);
-                return _pendingRequestJson;
+                return new string(buf, 0, read);
             }
-            catch
+            catch (Exception)
             {
+                _writeCompletedTcs?.TrySetResult(true);
                 CleanupConnection();
                 return null;
+            }
+            finally
+            {
+                _readLock.Release();
             }
         }
 
         public async Task WriteMessageAsync(string message, CancellationToken cancellationToken)
         {
             if (_stopped || _currentWriter == null)
+            {
+                _writeCompletedTcs?.TrySetResult(true);
                 return;
+            }
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                // 写 HTTP 响应并关闭连接
+                try { UnityEngine.Debug.Log($"[MCP][HTTP write] body length={(message?.Length ?? -1)}"); } catch { }
+                // 写 HTTP 响应
                 await WriteHttpResponseAsync(200, "OK", message, "application/json").ConfigureAwait(false);
             }
             finally
             {
-                CleanupConnection();
+                // 响应已发送，标记写完成
+                _writeCompletedTcs?.TrySetResult(true);
                 _writeLock.Release();
-                _acceptLock.Release(); // 允许下一次请求
             }
         }
 
@@ -165,12 +177,12 @@ namespace ModelContextProtocol.Unity.Runtime.Transport
             _currentWriter = null;
             _currentStream = null;
             _currentClient = null;
-            _pendingRequestJson = null;
         }
 
         public void Stop()
         {
             _stopped = true;
+            _writeCompletedTcs?.TrySetResult(true);
             CleanupConnection();
             try { _listener?.Stop(); } catch { }
         }
@@ -178,10 +190,9 @@ namespace ModelContextProtocol.Unity.Runtime.Transport
         public void Dispose()
         {
             Stop();
+            _readLock.Dispose();
             _writeLock.Dispose();
-            _acceptLock.Dispose();
         }
     }
 }
-
 

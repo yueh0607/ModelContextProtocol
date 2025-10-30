@@ -13,7 +13,6 @@ namespace MapleModelContextProtocol.Protocol
     /// MCP 使用这些消息，包括请求、响应、通知和错误。JSON-RPC 是一种无状态的、
     /// 轻量级的远程过程调用 (RPC) 协议，使用 JSON 作为其数据格式。
     /// </remarks>
-    [JsonConverter(typeof(JsonRpcMessageConverter))]
     public abstract class JsonRpcMessage
     {
         /// <summary>
@@ -59,11 +58,11 @@ namespace MapleModelContextProtocol.Protocol
         }
         
         
-
+    
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             JObject obj = JObject.Load(reader);
-
+    
             // 检查版本
             var version = (string)obj["jsonrpc"];
             if (version != "2.0")
@@ -77,17 +76,45 @@ namespace MapleModelContextProtocol.Protocol
             if (hasId && !hasMethod)
             {
                 if (hasError)
-                    return obj.ToObject<JsonRpcError>(serializer);
+                {
+                    var inst = new JsonRpcError();
+                    using (var r = obj.CreateReader())
+                    {
+                        serializer.Populate(r, inst);
+                    }
+                    return inst;
+                }
                 if (hasResult)
-                    return obj.ToObject<JsonRpcResponse>(serializer);
-
+                {
+                    var inst = new JsonRpcResponse();
+                    using (var r = obj.CreateReader())
+                    {
+                        serializer.Populate(r, inst);
+                    }
+                    return inst;
+                }
+    
                 throw new JsonSerializationException("Response must have either result or error.");
             }
             if (hasMethod && !hasId)
-                return obj.ToObject<JsonRpcNotification>(serializer);
-
+            {
+                var inst = new JsonRpcNotification();
+                using (var r = obj.CreateReader())
+                {
+                    serializer.Populate(r, inst);
+                }
+                return inst;
+            }
+    
             if (hasMethod && hasId)
-                return obj.ToObject<JsonRpcRequest>(serializer);
+            {
+                var inst = new JsonRpcRequest();
+                using (var r = obj.CreateReader())
+                {
+                    serializer.Populate(r, inst);
+                }
+                return inst;
+            }
             
             throw new JsonSerializationException("Invalid JSON-RPC message format.");
             
@@ -95,26 +122,24 @@ namespace MapleModelContextProtocol.Protocol
         
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            switch (value)
+            if (value == null)
+                throw new JsonSerializationException("Cannot serialize null JSON-RPC message.");
+
+            // 构造不包含本转换器的安全序列化器，保留其它转换器（RequestId、ContentBlock 等）
+            var safeSerializer = new JsonSerializer
             {
-                case JsonRpcRequest request:
-                    serializer.Serialize(writer, request);
-                    break;
-                case JsonRpcNotification notification:
-                    serializer.Serialize(writer, notification);
-                    break;
-                case JsonRpcResponse response:
-                    serializer.Serialize(writer, response);
-                    break;
-                case JsonRpcError error:
-                    serializer.Serialize(writer, error);
-                    break;
-                default:
-                    if (value != null)
-                        throw new JsonSerializationException($"Unknown JSON-RPC message type: {value.GetType()}");
-                    else
-                        throw new JsonSerializationException("Cannot serialize null JSON-RPC message.");
+                NullValueHandling = serializer.NullValueHandling,
+                ReferenceLoopHandling = serializer.ReferenceLoopHandling
+            };
+            foreach (var c in serializer.Converters)
+            {
+                if (!(c is JsonRpcMessageConverter))
+                    safeSerializer.Converters.Add(c);
             }
+
+            // 通过 JToken 中转，避免再次触发本转换器
+            var token = JToken.FromObject(value, safeSerializer);
+            token.WriteTo(writer);
         }
         
     }

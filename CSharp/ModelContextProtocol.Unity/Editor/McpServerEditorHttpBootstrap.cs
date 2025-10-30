@@ -16,7 +16,7 @@ namespace ModelContextProtocol.Unity.Editor
         private static TransportBasedMcpServer _server;
         private static CancellationTokenSource _cts;
 
-        [MenuItem("MCP Server/Start (HTTP 8767)")]
+        
         public static async void StartServer()
         {
             if (_server != null)
@@ -53,8 +53,7 @@ namespace ModelContextProtocol.Unity.Editor
                 StopServer();
             }
         }
-
-        [MenuItem("MCP Server/Stop (HTTP)")]
+        
         public static void StopServer()
         {
             try { _cts?.Cancel(); } catch { }

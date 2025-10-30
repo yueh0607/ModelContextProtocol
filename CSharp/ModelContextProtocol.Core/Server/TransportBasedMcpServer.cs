@@ -122,6 +122,9 @@ namespace MapleModelContextProtocol.Server
 
                 case JsonRpcNotification notification:
                     await HandleNotificationAsync(notification, cancellationToken);
+                    // 对于 HTTP 传输，通知不需要 JSON-RPC 响应，但需要发送一个空字符串来关闭 HTTP 连接
+                    // 发送一个空的 JSON-RPC 成功确认（对于 HTTP 传输层）
+                    await _transport.WriteMessageAsync("{}", cancellationToken);
                     break;
 
                 case JsonRpcResponse response:
@@ -288,7 +291,8 @@ namespace MapleModelContextProtocol.Server
                 }
             }
 
-            return new ListToolsResult { Tools = tools };
+            var result = new ListToolsResult { Tools = tools };
+            return result;
         }
 
         private async Task<CallToolResult> HandleToolsCallAsync(JsonRpcRequest request, CancellationToken cancellationToken)

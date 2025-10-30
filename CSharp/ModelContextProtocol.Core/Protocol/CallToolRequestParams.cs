@@ -21,10 +21,10 @@ namespace MapleModelContextProtocol.Protocol
         /// 获取或设置在服务器上调用工具时传递给该工具的可选参数。
         /// </summary>
         /// <remarks>
-        /// 此字典包含要传递给工具的参数值。每个键值对代表
-        /// 一个参数名称及其对应的参数值。
+        /// 此对象包含要传递给工具的参数值。
+        /// 使用 JObject 以支持任意类型的参数（字符串、数字、对象、数组等）。
         /// </remarks>
         [JsonProperty("arguments")]
-        public Dictionary<string, JObject> Arguments { get; set; } // Newtonsoft.Json无法序列化 IReadOnlyDictionary
+        public JObject Arguments { get; set; }
     }
 }

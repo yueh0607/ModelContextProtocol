@@ -89,11 +89,17 @@ namespace MapleModelContextProtocol
             {
                 // 等价于 STJ 的 Web 默认（大致思路：常见大小写/空值处理）
                 NullValueHandling = NullValueHandling.Ignore,
+                // 防止循环引用导致栈溢出
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                // 注意：不要开启 TypeNameHandling.Auto，会产生 $type 字段，破坏 MCP 协议格式
+                
                 // 允许数值从字符串读取可在必要时通过自定义 converter 覆盖到具体字段上
                 // Date/Time/Guid 等用 Json.NET 默认
             };
             // 枚举转字符串，并支持 [EnumMember(Value="...")]
             settings.Converters.Add(new StringEnumConverter());
+            // 统一注册 JSON-RPC 多态转换器，避免在类型上贴特性导致递归
+            settings.Converters.Add(new Protocol.JsonRpcMessageConverter());
             
             // —— 在此注册你项目里自定义的转换器（替代原 STJ Converter）——
             // 例如：
@@ -136,7 +142,18 @@ namespace MapleModelContextProtocol
         /// </summary>
         public static T Deserialize<T>(string json)
         {
-            return JsonConvert.DeserializeObject<T>(json, DefaultSettings);
+            T res = default;
+            try
+            {
+                res = JsonConvert.DeserializeObject<T>(json, DefaultSettings);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
+            return res;
         }
     }
 }
