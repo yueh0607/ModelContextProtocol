@@ -10,22 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MapleModelContextProtocol.Server
 {
-    /// <summary>
-    /// 基于传输层的 MCP 服务器实现。
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// 此实现提供了完整的 MCP 服务器功能，包括：
-    /// - 初始化握手处理
-    /// - 工具列表和调用
-    /// - 提示列表和获取
-    /// - 资源管理（可选）
-    /// - JSON-RPC 消息路由
-    /// </para>
-    /// <para>
-    /// 适用于 Unity 环境，使用 .NET Standard 2.0 和 Newtonsoft.Json。
-    /// </para>
-    /// </remarks>
+
     public sealed class TransportBasedMcpServer : McpServer
     {
         private readonly IMcpTransport _transport;
