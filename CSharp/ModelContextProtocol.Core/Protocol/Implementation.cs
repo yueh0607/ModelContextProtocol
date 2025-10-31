@@ -26,7 +26,7 @@ namespace MapleModelContextProtocol.Protocol
         /// <inheritdoc />
         [JsonProperty("title")]
         public string Title { get; set; }
-        
+
         /// <summary>
         /// 获取或设置实现的版本。
         /// </summary>
@@ -36,7 +36,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </remarks>
         [JsonProperty("version", Required = Required.Always)]
         public string Version { get; set; }
-        
+
         /*
          * TODO：原代码可选实现了
          * public IList<Icon>? Icons { get; set; }

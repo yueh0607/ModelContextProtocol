@@ -10,7 +10,7 @@ namespace MapleModelContextProtocol
     {
 
         public static JsonSerializerSettings DefaultSettings { get; } = CreateDefaultSettings();
-    
+
 
         public static readonly JsonSerializer DefaultSerializer = JsonSerializer.Create(DefaultSettings);
 
@@ -28,7 +28,7 @@ namespace MapleModelContextProtocol
             settings.Converters.Add(new StringEnumConverter());
 
             settings.Converters.Add(new Protocol.JsonRpcMessageConverter());
-            
+
             return settings;
         }
 
@@ -43,7 +43,7 @@ namespace MapleModelContextProtocol
                    && typeProp.Type == JTokenType.String
                    && string.Equals(typeProp.Value<string>(), "object", StringComparison.Ordinal);
         }
-        
+
 
         public static string Serialize(object value)
         {
@@ -62,7 +62,7 @@ namespace MapleModelContextProtocol
                 Console.WriteLine(e);
                 throw;
             }
-            
+
             return res;
         }
     }

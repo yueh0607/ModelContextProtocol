@@ -89,7 +89,7 @@
         /// </para>
         /// </remarks>
         public const string InitializedNotification = "notifications/initialized";
-        
+
         /// <summary>
         /// 发送通知的名称，用于通知接收者长时间运行请求的进度更新。
         /// </summary>
@@ -120,6 +120,6 @@
         /// 客户端不得尝试取消其“初始化”请求。
         /// </para>
         /// </remarks>
-        public const string CancelledNotification = "notifications/cancelled"; 
+        public const string CancelledNotification = "notifications/cancelled";
     }
 }

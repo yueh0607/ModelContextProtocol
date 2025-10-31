@@ -9,6 +9,6 @@
     /// </remarks>
     public sealed class ListToolsRequestParams : PaginatedRequestParams
     {
-        
+
     }
 }

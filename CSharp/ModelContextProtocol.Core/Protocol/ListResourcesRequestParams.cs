@@ -9,6 +9,6 @@
     /// </remarks>
     public class ListResourcesRequestParams : PaginatedRequestParams
     {
-        
+
     }
 }

@@ -27,7 +27,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </summary>
         [JsonProperty("content")]
         public IList<ContentBlock> Content { get; set; } = new List<ContentBlock>();
-        
+
         /// <summary>
         /// 获取或设置一个可选的 JSON 对象，用于表示工具调用的结构化结果。
         /// </summary>

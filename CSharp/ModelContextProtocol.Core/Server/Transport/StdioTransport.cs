@@ -6,18 +6,7 @@ using System.Threading.Tasks;
 
 namespace MapleModelContextProtocol.Server.Transport
 {
-    /// <summary>
-    /// 基于标准输入/输出流的 MCP 传输层实现。
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// 此实现使用 stdin 接收消息，使用 stdout 发送消息。
-    /// 每条消息以换行符（\n）分隔，遵循 JSON-RPC over stdio 规范。
-    /// </para>
-    /// <para>
-    /// 此实现适用于 Unity 命令行环境、编辑器扩展或任何通过标准流通信的场景。
-    /// </para>
-    /// </remarks>
+
     public sealed class StdioTransport : IMcpTransport
     {
         private readonly TextReader _input;
@@ -26,19 +15,11 @@ namespace MapleModelContextProtocol.Server.Transport
         private readonly SemaphoreSlim _writeLock;
         private bool _disposed;
 
-        /// <summary>
-        /// 使用默认的 stdin 和 stdout 初始化新的 StdioTransport 实例。
-        /// </summary>
         public StdioTransport()
             : this(Console.In, Console.Out)
         {
         }
 
-        /// <summary>
-        /// 使用指定的输入和输出流初始化新的 StdioTransport 实例。
-        /// </summary>
-        /// <param name="input">用于读取消息的文本读取器。</param>
-        /// <param name="output">用于写入消息的文本写入器。</param>
         public StdioTransport(TextReader input, TextWriter output)
         {
             _input = input ?? throw new ArgumentNullException(nameof(input));
@@ -48,7 +29,6 @@ namespace MapleModelContextProtocol.Server.Transport
             _disposed = false;
         }
 
-        /// <inheritdoc />
         public Task<string> ReadMessageAsync(CancellationToken cancellationToken)
         {
             if (_disposed)
@@ -115,14 +95,12 @@ namespace MapleModelContextProtocol.Server.Transport
             }
         }
 
-        /// <inheritdoc />
         public Task StartAsync(CancellationToken cancellationToken)
         {
             // stdio 传输在构造时就已经准备好了，无需额外启动步骤
             return Task.CompletedTask;
         }
 
-        /// <inheritdoc />
         public void Stop()
         {
             _disposed = true;

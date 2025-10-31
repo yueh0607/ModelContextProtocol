@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using MapleModelContextProtocol.Protocol;
 using MapleModelContextProtocol.Server;
 using ModelContextProtocol.Unity.Runtime.Transport;
-using UnityEditor;
 
 namespace ModelContextProtocol.Unity.Editor
 {
@@ -15,7 +14,7 @@ namespace ModelContextProtocol.Unity.Editor
     {
         private static TransportBasedMcpServer _server;
         private static CancellationTokenSource _cts;
-        
+
         public static async void StartServer()
         {
             if (_server != null)
@@ -52,7 +51,7 @@ namespace ModelContextProtocol.Unity.Editor
                 StopServer();
             }
         }
-        
+
         public static void StopServer()
         {
             try { _cts?.Cancel(); } catch { }

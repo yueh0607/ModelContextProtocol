@@ -12,7 +12,7 @@ namespace MapleModelContextProtocol.Protocol
     /// </remarks>
     public abstract class RequestParams
     {
-     
+
         protected RequestParams()
         {
         }

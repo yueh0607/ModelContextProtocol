@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MapleModelContextProtocol.Protocol
@@ -14,7 +13,7 @@ namespace MapleModelContextProtocol.Protocol
     public sealed class CallToolRequestParams : RequestParams
     {
         /// <summary>获取或设置要调用的工具的名称。</summary>
-        [JsonProperty("name",Required = Required.Always)]
+        [JsonProperty("name", Required = Required.Always)]
         public string Name { get; set; }
 
         /// <summary>

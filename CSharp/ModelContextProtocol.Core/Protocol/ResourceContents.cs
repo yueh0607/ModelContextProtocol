@@ -71,7 +71,7 @@ namespace MapleModelContextProtocol.Protocol
             string uri = obj.Value<string>("uri") ?? throw new JsonSerializationException("Missing uri for ResourceContents");
             string mimeType = obj.Value<string>("mimeType");  // may be null
             JObject meta = obj.Value<JObject>("_meta");
-            
+
             // 根据 blob 或 text 字段的存在来决定子类
             if (obj.TryGetValue("blob", out JToken blobToken))
             {

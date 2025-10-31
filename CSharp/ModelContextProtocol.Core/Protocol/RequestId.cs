@@ -10,8 +10,8 @@ namespace MapleModelContextProtocol.Protocol
     {
         /// <summary>id，可以是 string、装箱的 long 或 null。</summary>
         private readonly object _id;
-        
-        
+
+
         /// <summary>使用指定值初始化 <see cref="RequestId"/> 的新实例。</summary>
         /// <param name="value">所需的 ID 值。</param>
         public RequestId(string value)
@@ -26,30 +26,30 @@ namespace MapleModelContextProtocol.Protocol
             // 将 long 数据装箱。实际应用中，请求 ID 几乎都是字符串，所以这种情况应该很少见。
             _id = value;
         }
-        
+
         /// <summary>获取此 ID 对应的底层对象。</summary>
         /// <remarks>这将是 <see cref="string"/>、装箱的 <see cref="long"/> 或 <see langword="null"/>。</remarks>
         public object Id => _id;
-        
+
         /// <inheritdoc />
         public override string ToString() =>
             _id is string stringValue ? stringValue :
             _id is long longValue ? longValue.ToString(CultureInfo.InvariantCulture) :
             string.Empty;
-        
+
         /// <inheritdoc />
         public bool Equals(RequestId other) => Equals(_id, other._id);
 
         /// <inheritdoc />
         public override bool Equals(object obj) => obj is RequestId other && Equals(other);
-        
+
         /// <inheritdoc />
         public override int GetHashCode() => _id?.GetHashCode() ?? 0;
-        
+
         public static bool operator ==(RequestId left, RequestId right) => left.Equals(right);
 
         public static bool operator !=(RequestId left, RequestId right) => !left.Equals(right);
-        
+
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -60,16 +60,16 @@ namespace MapleModelContextProtocol.Protocol
             switch (reader.TokenType)
             {
                 case JsonToken.String:
-                {
-                    string s = (string)reader.Value;
-                    return new RequestId(s);
-                }
+                    {
+                        string s = (string)reader.Value;
+                        return new RequestId(s);
+                    }
                 case JsonToken.Integer:
-                {
-                    // 注意：Json.NET 的整数可以从 Int64 / Int32 等多种类型来
-                    long l = Convert.ToInt64(reader.Value);
-                    return new RequestId(l);
-                }
+                    {
+                        // 注意：Json.NET 的整数可以从 Int64 / Int32 等多种类型来
+                        long l = Convert.ToInt64(reader.Value);
+                        return new RequestId(l);
+                    }
                 default:
                     throw new JsonSerializationException("RequestId must be string or integer.");
             }
@@ -93,5 +93,5 @@ namespace MapleModelContextProtocol.Protocol
             }
         }
     }
-    
+
 }

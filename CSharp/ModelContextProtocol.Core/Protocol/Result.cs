@@ -12,7 +12,7 @@ namespace MapleModelContextProtocol.Protocol
         protected Result()
         {
         }
-        
+
         /// <summary>
         /// 元数据保留字段（协议级别保留的元信息）。
         /// </summary>

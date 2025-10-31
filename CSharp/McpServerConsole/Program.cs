@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 using MapleModelContextProtocol.Protocol;
 using MapleModelContextProtocol.Server;
 using MapleModelContextProtocol.Server.Transport;
-using Newtonsoft.Json.Linq;
 
 namespace McpServerConsole
 {
     internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             Console.WriteLine("========================================");
             Console.WriteLine("     MCP Server HTTP 控制台调试程序");
@@ -38,7 +37,7 @@ namespace McpServerConsole
             {
                 // 创建传输层
                 IMcpTransport transport;
-                
+
                 if (transportType == "stdio")
                 {
                     Console.WriteLine("[启动] 使用 STDIO 传输");
@@ -53,10 +52,10 @@ namespace McpServerConsole
                 // 创建服务器选项
                 var options = new McpServerOptions
                 {
-                    ServerInfo = new Implementation 
-                    { 
-                        Name = "MCP Server Console", 
-                        Version = "1.0.0" 
+                    ServerInfo = new Implementation
+                    {
+                        Name = "MCP Server Console",
+                        Version = "1.0.0"
                     },
                     Capabilities = new ServerCapabilities
                     {
@@ -130,9 +129,9 @@ namespace McpServerConsole
                     Console.WriteLine($"[工具调用] echo: {message}");
 
                     var result = new CallToolResult();
-                    result.Content.Add(new TextContentBlock 
-                    { 
-                        Text = $"Echo: {message}" 
+                    result.Content.Add(new TextContentBlock
+                    {
+                        Text = $"Echo: {message}"
                     });
                     return result;
                 }

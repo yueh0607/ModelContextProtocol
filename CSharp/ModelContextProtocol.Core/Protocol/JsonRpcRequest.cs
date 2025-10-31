@@ -20,13 +20,13 @@ namespace MapleModelContextProtocol.Protocol
         /// </summary>
         [JsonProperty("method", Required = Required.Always)]
         public string Method { get; set; }
-        
+
         /// <summary>
         /// 该方法的可选参数。
         /// </summary>
         [JsonProperty("params")]
         public JObject Params { get; set; }
-        
+
         /// <summary>
         /// 创建一个带新的 Id 的 Request 副本
         /// </summary>
@@ -34,10 +34,10 @@ namespace MapleModelContextProtocol.Protocol
         {
             return new JsonRpcRequest
             {
-                JsonRpc = this.JsonRpc,
+                JsonRpc = JsonRpc,
                 Id = id,
-                Method = this.Method,
-                Params = this.Params,
+                Method = Method,
+                Params = Params,
             };
         }
     }

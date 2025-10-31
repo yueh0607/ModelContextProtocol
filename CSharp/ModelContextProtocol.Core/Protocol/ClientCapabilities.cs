@@ -86,6 +86,6 @@ namespace MapleModelContextProtocol.Protocol
         [JsonIgnore]
         [Obsolete("Use McpClientOptions.Handlers.NotificationHandlers instead. This member will be removed in a subsequent release.")] // See: https://github.com/modelcontextprotocol/csharp-sdk/issues/774
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public IEnumerable<KeyValuePair<string, Func<JsonRpcNotification, CancellationToken,ValueTask>>> NotificationHandlers { get; set; }
+        public IEnumerable<KeyValuePair<string, Func<JsonRpcNotification, CancellationToken, ValueTask>>> NotificationHandlers { get; set; }
     }
 }

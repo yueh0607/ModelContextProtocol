@@ -48,7 +48,7 @@ namespace MapleModelContextProtocol.Protocol
         [JsonProperty("capabilities")]
         public ClientCapabilities Capabilities { get; set; }
 
-        
+
         /// <summary>
         /// 获取或设置客户端实现的信息，包括其名称和版本。
         /// </summary>

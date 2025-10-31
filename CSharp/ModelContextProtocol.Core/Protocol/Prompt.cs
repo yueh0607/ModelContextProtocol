@@ -11,7 +11,7 @@ namespace MapleModelContextProtocol.Protocol
     /// </remarks>
     public class Prompt : IBaseMetadata
     {
-         /// <inheritdoc />
+        /// <inheritdoc />
         [JsonProperty("name", Required = Required.Always)]
         public string Name { get; set; }
 

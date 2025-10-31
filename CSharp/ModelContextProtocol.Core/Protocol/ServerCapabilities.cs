@@ -26,7 +26,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </remarks>
         [JsonProperty("tools")]
         public ToolsCapability Tools { get; set; }
-        
+
         // /// <summary>
         // /// 获取或设置服务器支持的实验性、非标准功能。
         // /// </summary>

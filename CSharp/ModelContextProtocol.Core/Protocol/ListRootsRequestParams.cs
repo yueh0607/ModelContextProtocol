@@ -9,7 +9,7 @@
     /// </remarks>
     public sealed class ListRootsRequestParams : RequestParams
     {
-        
+
     }
 
 }

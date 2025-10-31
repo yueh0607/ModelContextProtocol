@@ -32,14 +32,14 @@ namespace MapleModelContextProtocol.Protocol
         [JsonProperty("maxTokens")]
         public int? MaxTokens { get; set; }
 
-        
+
         /// <summary>
         /// 获取或设置服务器请求包含在提示中的消息。
         /// </summary>
         [JsonProperty("messages", Required = Required.Always)]
         public IReadOnlyList<SamplingMessage> Messages { get; set; }
 
-        
+
         /// <summary>
         /// 获取或设置要传递给 LLM 提供程序的可选元数据。
         /// </summary>
@@ -86,7 +86,7 @@ namespace MapleModelContextProtocol.Protocol
         [JsonProperty("stopSequences")]
         public IReadOnlyList<string> StopSequences { get; set; }
 
-        
+
         /// <summary>
         /// 获取或设置服务器用于采样的可选系统提示。
         /// </summary>

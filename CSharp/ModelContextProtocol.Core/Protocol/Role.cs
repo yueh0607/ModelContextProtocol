@@ -15,7 +15,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </summary>
         [EnumMember(Value = "user")]
         User,
-        
+
         /// <summary>
         /// 对应对话中的AI助手。
         /// </summary>

@@ -17,9 +17,6 @@ namespace MapleModelContextProtocol.Server
         public abstract Tool ProtocolTool { get; }
         public abstract IReadOnlyList<object> Metadata { get; }
 
-        /// <summary>
-        /// 从委托创建简单工具
-        /// </summary>
         public static SimpleMcpServerTool Create(
             string name,
             string description,
@@ -28,9 +25,6 @@ namespace MapleModelContextProtocol.Server
             return new DelegateTool(name, description, handler);
         }
 
-        /// <summary>
-        /// 从方法信息创建工具（反射方式）
-        /// </summary>
         public static SimpleMcpServerTool Create<TTarget>(
             string name,
             string description,
@@ -46,9 +40,7 @@ namespace MapleModelContextProtocol.Server
 
         string IMcpServerPrimitive.Id => ProtocolTool.Name;
 
-        /// <summary>
-        /// 委托包装实现
-        /// </summary>
+
         private class DelegateTool : SimpleMcpServerTool
         {
             private readonly Tool _tool;
@@ -139,10 +131,10 @@ namespace MapleModelContextProtocol.Examples
                 {
                     // 从参数中读取
                     string message = args["message"]?.ToString() ?? "Hello World";
-                    
+
                     // 执行逻辑
                     string result = $"Echo: {message}";
-                    
+
                     // 返回结果
                     return new CallToolResult
                     {
@@ -161,7 +153,7 @@ namespace MapleModelContextProtocol.Examples
             public async Task<CallToolResult> GetWeather(JObject args, CancellationToken ct)
             {
                 string city = args["city"]?.ToString();
-                
+
                 if (string.IsNullOrEmpty(city))
                 {
                     return new CallToolResult
@@ -176,7 +168,7 @@ namespace MapleModelContextProtocol.Examples
 
                 // 模拟天气数据
                 var weather = $"今天{city}的天气是晴天，25度";
-                
+
                 return new CallToolResult
                 {
                     Content = new List<ContentBlock>
@@ -271,7 +263,7 @@ namespace MapleModelContextProtocol.Examples
             // 2. 如果需要，可以转换类型
             // 注意：您可能需要让 SimpleMcpServerTool 也实现 IMcpServerPrimitive
             // 或者创建一个适配器
-            
+
             // 3. 创建服务器选项（假设您已经实现了 McpServerOptions）
             // var options = new McpServerOptions
             // {

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MapleModelContextProtocol.Protocol;
 using MapleModelContextProtocol.Server.Transport;
-using MapleModelContextProtocol;
 using Newtonsoft.Json.Linq;
 
 namespace MapleModelContextProtocol.Server
@@ -16,7 +15,7 @@ namespace MapleModelContextProtocol.Server
         private readonly IMcpTransport _transport;
         private readonly McpServerOptions _options;
         private readonly Dictionary<string, RequestId> _pendingRequests;
-        
+
         // 运行时状态
         private ClientCapabilities _clientCapabilities;
         private Implementation _clientInfo;
@@ -34,7 +33,7 @@ namespace MapleModelContextProtocol.Server
             _transport = transport ?? throw new ArgumentNullException(nameof(transport));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _pendingRequests = new Dictionary<string, RequestId>();
-            
+
             _initialized = false;
             _clientCapabilities = new ClientCapabilities();
             _clientInfo = new Implementation { Name = "Unknown", Version = "0.0.0" };
@@ -62,7 +61,7 @@ namespace MapleModelContextProtocol.Server
                 try
                 {
                     string messageJson = await _transport.ReadMessageAsync(cancellationToken);
-                    
+
                     if (messageJson == null)
                     {
                         // 连接已关闭
@@ -212,7 +211,7 @@ namespace MapleModelContextProtocol.Server
                     // 客户端已完成初始化
                     _initialized = true;
                     break;
-                
+
                 // 可以在这里处理其他通知
                 default:
                     // 未知通知，忽略
@@ -268,7 +267,7 @@ namespace MapleModelContextProtocol.Server
             {
                 var paramsObj = ParseRequestParams<ListToolsRequestParams>(request);
                 var context = new RequestContext<ListToolsRequestParams> { Params = paramsObj };
-                
+
                 var handlerResult = await _options.Handlers.ListToolsHandler(context, cancellationToken);
                 if (handlerResult?.Tools != null)
                 {
@@ -314,7 +313,7 @@ namespace MapleModelContextProtocol.Server
             {
                 var paramsObj = ParseRequestParams<ListPromptsRequestParams>(request);
                 var context = new RequestContext<ListPromptsRequestParams> { Params = paramsObj };
-                
+
                 var result = await _options.Handlers.ListPromptsHandler(context, cancellationToken);
                 if (result?.Prompts != null)
                 {
@@ -334,7 +333,7 @@ namespace MapleModelContextProtocol.Server
 
             var paramsObj = ParseRequestParams<GetPromptRequestParams>(request);
             var context = new RequestContext<GetPromptRequestParams> { Params = paramsObj };
-            
+
             return await _options.Handlers.GetPromptHandler(context, cancellationToken);
         }
 
@@ -347,7 +346,7 @@ namespace MapleModelContextProtocol.Server
 
             var paramsObj = ParseRequestParams<ListResourcesRequestParams>(request);
             var context = new RequestContext<ListResourcesRequestParams> { Params = paramsObj };
-            
+
             // McpRequestHandler 返回 ValueTask，可以直接 await
             return await _options.Handlers.ListResourcesHandler(context, cancellationToken);
         }
@@ -361,7 +360,7 @@ namespace MapleModelContextProtocol.Server
 
             var paramsObj = ParseRequestParams<ReadResourceRequestParams>(request);
             var context = new RequestContext<ReadResourceRequestParams> { Params = paramsObj };
-            
+
             return await _options.Handlers.ReadResourceHandler(context, cancellationToken);
         }
 

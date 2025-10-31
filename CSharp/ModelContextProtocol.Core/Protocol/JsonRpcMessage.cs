@@ -38,7 +38,7 @@ namespace MapleModelContextProtocol.Protocol
 
 
     }
-    
+
     /// <summary>
     /// 为 <see cref="JsonRpcMessage"/> 提供多态序列化/反序列化的转换器。
     /// </summary>
@@ -56,23 +56,23 @@ namespace MapleModelContextProtocol.Protocol
         {
             return typeof(JsonRpcMessage).IsAssignableFrom(objectType);
         }
-        
-        
-    
+
+
+
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             JObject obj = JObject.Load(reader);
-    
+
             // 检查版本
             var version = (string)obj["jsonrpc"];
             if (version != "2.0")
                 throw new JsonSerializationException("Invalid or missing jsonrpc version.");
-            
+
             bool hasId = obj["id"] != null;
             bool hasMethod = obj["method"] != null;
             bool hasError = obj["error"] != null;
             bool hasResult = obj["result"] != null;
-            
+
             if (hasId && !hasMethod)
             {
                 if (hasError)
@@ -93,7 +93,7 @@ namespace MapleModelContextProtocol.Protocol
                     }
                     return inst;
                 }
-    
+
                 throw new JsonSerializationException("Response must have either result or error.");
             }
             if (hasMethod && !hasId)
@@ -105,7 +105,7 @@ namespace MapleModelContextProtocol.Protocol
                 }
                 return inst;
             }
-    
+
             if (hasMethod && hasId)
             {
                 var inst = new JsonRpcRequest();
@@ -115,11 +115,11 @@ namespace MapleModelContextProtocol.Protocol
                 }
                 return inst;
             }
-            
+
             throw new JsonSerializationException("Invalid JSON-RPC message format.");
-            
+
         }
-        
+
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
@@ -141,6 +141,6 @@ namespace MapleModelContextProtocol.Protocol
             var token = JToken.FromObject(value, safeSerializer);
             token.WriteTo(writer);
         }
-        
+
     }
 }

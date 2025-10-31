@@ -20,11 +20,11 @@ namespace MapleModelContextProtocol.Protocol
     /// </para>
     /// </remarks>
     [JsonConverter(typeof(ContentBlockNewtonsoftConverter))] // TODO：由于缺乏对 AllowOutOfOrderMetadataProperties 的下级支持，因此存在此转换器。
-    public abstract class ContentBlock 
+    public abstract class ContentBlock
     {
         protected ContentBlock()
         {
-        }    
+        }
         /// <summary>
         /// 获取或设置内容类型。
         /// </summary>
@@ -33,7 +33,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </remarks>
         [JsonProperty("type")]
         public string Type { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// 获取或设置内容的可选注释。
         /// </summary>
@@ -43,11 +43,11 @@ namespace MapleModelContextProtocol.Protocol
         /// </remarks>
         [JsonProperty("annotations")]
         public Annotations Annotations { get; set; }
-        
+
         // 注意：在原始版本中，一些派生类除了基类的 Result /Meta 处理之外，还重新声明了 Meta。
         // 如果 Meta 是一个公共字段，您可以将其放在基类中或进行适当的派生。
-        
-        
+
+
     }
 
     /// <summary>
@@ -246,7 +246,7 @@ namespace MapleModelContextProtocol.Protocol
         /// <summary>
         /// 获取或设置消息的文本内容。
         /// </summary>
-        [JsonProperty("text",Required = Required.Always)]
+        [JsonProperty("text", Required = Required.Always)]
         public string Text { get; set; }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </remarks>
         [JsonProperty("mimeType", Required = Required.Always)]
         public string MimeType { get; set; }
-        
+
         /// <summary>
         /// 获取或设置 MCP 为协议级元数据保留的元数据。
         /// </summary>

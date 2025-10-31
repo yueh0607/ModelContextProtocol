@@ -8,10 +8,7 @@ using System.Threading.Tasks;
 
 namespace MapleModelContextProtocol.Server.Transport
 {
-    /// <summary>
-    /// 基于 HTTP POST 的 IMcpTransport 实现（适用于控制台程序）
-    /// 每个 HTTP POST 请求-响应对应一次 JSON-RPC 消息交换
-    /// </summary>
+
     public sealed class HttpTransport : IMcpTransport, IDisposable
     {
         private readonly int _port;
@@ -26,12 +23,6 @@ namespace MapleModelContextProtocol.Server.Transport
         private volatile bool _stopped;
         private Action<string> _logger;
 
-        /// <summary>
-        /// 创建一个新的 HTTP 传输实例
-        /// </summary>
-        /// <param name="port">监听端口（默认 8767）</param>
-        /// <param name="path">HTTP 路径（默认 "/"）</param>
-        /// <param name="logger">可选的日志记录器</param>
         public HttpTransport(int port = 8767, string path = "/", Action<string> logger = null)
         {
             _port = port;
@@ -74,7 +65,7 @@ namespace MapleModelContextProtocol.Server.Transport
                 Log("Waiting for HTTP client connection...");
                 _currentClient = await _listener.AcceptTcpClientAsync().ConfigureAwait(false);
                 Log("Client connected");
-                
+
                 _currentStream = _currentClient.GetStream();
                 var reader = new StreamReader(_currentStream, Encoding.UTF8, false, 4096, true);
                 _currentWriter = new StreamWriter(_currentStream, new UTF8Encoding(false), 4096, true)
@@ -89,7 +80,7 @@ namespace MapleModelContextProtocol.Server.Transport
                 // 读取 HTTP 请求行
                 var requestLine = await reader.ReadLineAsync().ConfigureAwait(false);
                 Log($"Request line: {requestLine}");
-                
+
                 if (string.IsNullOrEmpty(requestLine))
                 {
                     await WriteHttpResponseAsync(400, "Bad Request", "Empty request").ConfigureAwait(false);
@@ -107,7 +98,7 @@ namespace MapleModelContextProtocol.Server.Transport
                 }
 
                 string method = parts[0].ToUpperInvariant();
-                
+
                 // 读取请求头
                 int contentLength = 0;
                 string line;
@@ -158,7 +149,7 @@ namespace MapleModelContextProtocol.Server.Transport
                     if (r <= 0) break;
                     read += r;
                 }
-                
+
                 string body = new string(buf, 0, read);
                 Log($"Received message: {body}");
                 return body;

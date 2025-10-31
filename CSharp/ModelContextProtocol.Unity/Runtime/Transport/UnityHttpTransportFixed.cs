@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MapleModelContextProtocol.Server.Transport;
-using UnityEngine;
 
 namespace ModelContextProtocol.Unity.Runtime.Transport
 {

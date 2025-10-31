@@ -26,11 +26,11 @@ namespace MapleModelContextProtocol.Protocol
             // 将 long 装箱。实际上，进度令牌几乎总是 string ，因此这种情况应该很少见。
             _token = value;
         }
-        
+
         /// <summary>获取此令牌的值。</summary>
         /// <remarks>这将是 <see cref="string"/>、装箱的 <see cref="long"/> 或 <see langword="null"/>。</remarks>
         public object Token => _token;
-        
+
         /// <inheritdoc />
         public override string ToString() =>
             _token is string stringValue ? stringValue :
@@ -38,13 +38,13 @@ namespace MapleModelContextProtocol.Protocol
             null;
         /// <inheritdoc />
         public bool Equals(ProgressToken other) => Equals(_token, other._token);
-        
+
         /// <inheritdoc />
         public override bool Equals(object obj) => obj is ProgressToken other && Equals(other);
 
         /// <inheritdoc />
         public override int GetHashCode() => _token?.GetHashCode() ?? 0;
-        
+
         /// <inheritdoc />
         public static bool operator ==(ProgressToken left, ProgressToken right) => left.Equals(right);
 
@@ -59,15 +59,15 @@ namespace MapleModelContextProtocol.Protocol
             switch (reader.TokenType)
             {
                 case JsonToken.String:
-                {
-                    string s = (string)reader.Value;
-                    return new ProgressToken(s);
-                }
+                    {
+                        string s = (string)reader.Value;
+                        return new ProgressToken(s);
+                    }
                 case JsonToken.Integer:
-                {
-                    long l = Convert.ToInt64(reader.Value);
-                    return new ProgressToken(l);
-                }
+                    {
+                        long l = Convert.ToInt64(reader.Value);
+                        return new ProgressToken(l);
+                    }
                 default:
                     // Optionally handle Null token or other types
                     throw new JsonSerializationException("progressToken must be a string or an integer");

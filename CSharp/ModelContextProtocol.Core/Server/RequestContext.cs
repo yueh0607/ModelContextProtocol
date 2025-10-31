@@ -14,7 +14,7 @@ namespace MapleModelContextProtocol.Server
     public sealed class RequestContext<TParams>
     {
         public TParams Params { get; set; }
-        
+
         public IDictionary<string, object> Items { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </summary>
         [JsonProperty("content", Required = Required.Always)]
         public ContentBlock Content { get; set; }
-        
+
         /// <summary>
         /// 获取或设置生成消息的模型的名称。
         /// </summary>
@@ -30,7 +30,7 @@ namespace MapleModelContextProtocol.Protocol
         /// </remarks>
         [JsonProperty("model", Required = Required.Always)]
         public string Model { get; set; }
-        
+
         /// <summary>
         /// 获取或设置消息生成（采样）停止的原因（如果已知）。
         /// </summary>

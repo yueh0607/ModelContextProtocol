@@ -68,7 +68,7 @@ namespace MapleModelContextProtocol.Protocol
         [JsonProperty("description")]
         public string Description { get; set; }
     }
-    
+
     /// <summary>
     /// 为 <see cref="ResourceContents"/> 提供 <see cref="JsonConverter"/>。
     /// 和原生的 JsonConverter 不同，它支持根据 "type" 字段动态反序列化为不同的子类。
@@ -81,16 +81,16 @@ namespace MapleModelContextProtocol.Protocol
         {
             if (reader.TokenType == JsonToken.Null)
             {
-                return null; 
+                return null;
             }
 
             if (reader.TokenType != JsonToken.StartObject)
             {
                 throw new JsonSerializationException("Expected StartObject.");
             }
-            
+
             JObject obj = JObject.Load(reader);
-            
+
             var type = obj.Value<string>("type");
             if (type == null) throw new JsonSerializationException("Field 'type' is required in PrimitiveSchemaDefinition");
 
@@ -105,7 +105,7 @@ namespace MapleModelContextProtocol.Protocol
                         {
                             Enum = enumToken.ToObject<IList<string>>(serializer)
                         };
-                        
+
                         if (obj.TryGetValue("enumNames", out JToken namesToken))
                             es.EnumNames = namesToken.ToObject<IList<string>>(serializer);
                         schema = es;
@@ -252,8 +252,8 @@ namespace MapleModelContextProtocol.Protocol
         [JsonProperty("maxLength")]
         public int? MaxLength { get; set; }
 
-        
-        
+
+
         private string _format;
 
         /// <summary>获取或设置字符串的特定格式（“email”、“uri”、“date”或“date-time”）。</summary>
@@ -272,7 +272,7 @@ namespace MapleModelContextProtocol.Protocol
             }
         }
     }
-    
+
     /// <summary>表示数字或整数类型的模式。</summary>
     public class NumberSchema : PrimitiveSchemaDefinition
     {
@@ -315,7 +315,7 @@ namespace MapleModelContextProtocol.Protocol
         [JsonProperty("default")]
         public bool? Default { get; set; }
     }
-    
+
     /// <summary>表示枚举类型的模式。</summary>
     public class EnumSchema : PrimitiveSchemaDefinition
     {

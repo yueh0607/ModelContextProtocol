@@ -34,8 +34,8 @@ namespace MapleModelContextProtocol.Protocol
         [JsonProperty("description")]
         public string Description { get; set; }
 
-        
-        
+
+
         private JToken _inputSchema = McpJsonUtilities.DefaultMcpToolSchema;
         /// <summary>
         /// 获取或设置一个 JSON Schema 对象，用于定义工具的预期参数。
@@ -53,7 +53,7 @@ namespace MapleModelContextProtocol.Protocol
         /// 如果未明确设置，则使用默认的最小 Schema <c>{"type":"object"}</c>。
         /// </para>
         /// </remarks>
-        [JsonProperty("inputSchema",Required = Required.Always)]
+        [JsonProperty("inputSchema", Required = Required.Always)]
         public JToken InputSchema
         {
             get => _inputSchema;
@@ -69,7 +69,7 @@ namespace MapleModelContextProtocol.Protocol
 
         }
 
-        
+
         private JToken _outputSchema;
         /// <summary>
         /// 获取或设置一个 JSON Schema 对象，用于定义工具的预期结构化输出。

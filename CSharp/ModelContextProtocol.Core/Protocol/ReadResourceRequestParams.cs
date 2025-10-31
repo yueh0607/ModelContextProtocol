@@ -14,7 +14,7 @@ namespace MapleModelContextProtocol.Protocol
         /// <summary>
         /// 要读取的资源的URI。该URI可使用任何协议；具体如何解析由服务器决定。
         /// </summary>
-        [JsonProperty("uri",Required = Required.Always)]
+        [JsonProperty("uri", Required = Required.Always)]
         public string Uri { get; set; }
     }
 }

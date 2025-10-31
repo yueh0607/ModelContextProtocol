@@ -23,7 +23,7 @@ namespace MapleModelContextProtocol.Protocol
         /// <summary>
         /// Gets or sets the URI of this resource.
         /// </summary>
-        [JsonProperty("uri",Required = Required.Always)]
+        [JsonProperty("uri", Required = Required.Always)]
         public string Uri { get; set; }
 
         /// <summary>
