@@ -9,6 +9,12 @@
 
 
 ## Contributors
-<a href="https://github.com/yueh0607/ModelContextProtocol/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=yueh0607/ModelContextProtocol" />
-</a>
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <a href="https://github.com/yueh0607/ModelContextProtocol/graphs/contributors" target="_blank">
+    <div style="display: flex; align-items: center; flex-direction: column;">
+      <img src="https://avatars.githubusercontent.com/u/ID_OF_USER" width="50" height="50" alt="User Name" style="border-radius: 50%; margin-bottom: 5px;">
+      <span>Username</span>
+    </div>
+  </a>
+  <!-- Repeat the block for each contributor -->
+</div>
