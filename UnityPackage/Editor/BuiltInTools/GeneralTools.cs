@@ -17,7 +17,7 @@ namespace UnityAIStudio.McpServer.Tools
     [McpToolClass(Category = "General", Description = "Built-in Unity tools")]
     public class GeneralTools
     {
-        #region GameObject Tools
+        #region GameObject Tools 
 
         [McpTool(Description = "Get GameObject information by name", Category = "Scene")]
         public async Task<CallToolResult> GetGameObject(

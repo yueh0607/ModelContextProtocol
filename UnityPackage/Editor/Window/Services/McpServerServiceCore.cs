@@ -190,22 +190,8 @@ namespace UnityAIStudio.McpServer.Services
 
         private void InitializeTools()
         {
-            // 创建Unity工具列表（UI显示用）
-            availableTools = new List<McpTool>
-            {
-                new McpTool("GetGameObject", "Get GameObject by name or path", "Scene"),
-                new McpTool("CreateGameObject", "Create a new GameObject in the scene", "Scene"),
-                new McpTool("DestroyGameObject", "Destroy a GameObject", "Scene"),
-                new McpTool("SetPosition", "Set GameObject position", "Transform"),
-                new McpTool("SetRotation", "Set GameObject rotation", "Transform"),
-                new McpTool("SetScale", "Set GameObject scale", "Transform"),
-                new McpTool("AddComponent", "Add component to GameObject", "Component"),
-                new McpTool("RemoveComponent", "Remove component from GameObject", "Component"),
-                new McpTool("LoadScene", "Load a Unity scene", "Scene"),
-                new McpTool("SaveScene", "Save current scene", "Scene"),
-                new McpTool("PlayMode", "Enter/Exit play mode", "Editor"),
-                new McpTool("GetProjectInfo", "Get Unity project information", "Project")
-            };
+            // 初始为空；在注册工具后由 coreTools 动态构建
+            availableTools = new List<McpTool>();
         }
 
         private McpServerOptions CreateServerOptions()
@@ -232,6 +218,10 @@ namespace UnityAIStudio.McpServer.Services
             // 注册到服务器选项
             options.ToolCollection = coreTools;
 
+            // 同步构建 UI 显示用的工具列表（名称 + 描述）
+            RebuildAvailableToolsFromCore();
+            OnToolsListUpdated?.Invoke(availableTools);
+
             Log($"Registered {coreTools.Count} MCP tools (built-in + user-defined)");
         }
 
@@ -243,6 +233,8 @@ namespace UnityAIStudio.McpServer.Services
         public void RefreshTools()
         {
             Log("Refreshing tools list...");
+            // 从 coreTools 重新构建（允许域重载后刷新）
+            RebuildAvailableToolsFromCore();
             OnToolsListUpdated?.Invoke(availableTools);
             Log($"Found {availableTools.Count} available tools");
         }
@@ -331,6 +323,25 @@ namespace UnityAIStudio.McpServer.Services
         #endregion
 
         #region Private Methods
+
+        private void RebuildAvailableToolsFromCore()
+        {
+            var newList = new List<McpTool>();
+            if (coreTools != null)
+            {
+                foreach (var t in coreTools)
+                {
+                    var meta = t.ProtocolTool;
+                    var name = meta?.Name ?? "(Unnamed Tool)";
+                    var desc = meta?.Description ?? string.Empty;
+                    var cat = meta?.Meta != null && meta.Meta["category"] != null
+                        ? meta.Meta["category"].ToString()
+                        : "General";
+                    newList.Add(new McpTool(name, desc, cat));
+                }
+            }
+            availableTools = newList;
+        }
 
         private void SetServerStatus(ServerStatus status)
         {

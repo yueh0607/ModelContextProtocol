@@ -15,8 +15,15 @@ namespace UnityAIStudio.McpServer.Services
         private static bool isInitialized = false;
         private static bool isHandlingCompilation = false; 
 
+        // Persistent log buffer across window open/close
+        private static readonly System.Collections.Generic.List<string> s_logs = new System.Collections.Generic.List<string>();
+        private static int s_maxLogLines = 1000; // global cap to persist logs
+
         static McpServerManager()
         {
+            // Load global log capacity
+            s_maxLogLines = UnityEditor.EditorPrefs.GetInt("UnityAIStudio.McpServer.Logs.MaxLines.Global", 1000);
+
             // 注册编译事件
             CompilationPipeline.compilationStarted += OnCompilationStarted;
             CompilationPipeline.compilationFinished += OnCompilationFinished;
@@ -94,6 +101,9 @@ namespace UnityAIStudio.McpServer.Services
                 instance = new McpServerServiceCore();
                 isInitialized = true;
                 Debug.Log("[MCP Server Manager] Server instance created");
+
+                // Subscribe to logs to persist across window lifecycle
+                instance.OnLogMessage += AppendLog;
             }
             return instance;
         }
@@ -121,6 +131,7 @@ namespace UnityAIStudio.McpServer.Services
         {
             if (instance != null)
             {
+                instance.OnLogMessage -= AppendLog;
                 instance.Dispose();
                 instance = null;
                 isInitialized = false;
@@ -151,6 +162,55 @@ namespace UnityAIStudio.McpServer.Services
         {
             EditorPrefs.SetBool("McpServer_AutoRestartAfterCompile", enabled);
             Debug.Log($"[MCP Server Manager] Auto-restart after compile: {(enabled ? "enabled" : "disabled")}");
+        }
+
+        /// <summary>
+        /// 获取当前配置端口（优先返回运行端口；否则返回配置端口；再否则读 EditorPrefs）。
+        /// </summary>
+        public static int GetConfiguredPort()
+        {
+            if (instance != null)
+            {
+                var running = instance.State?.CurrentPort ?? 0;
+                if (running > 0) return running;
+                var cfg = instance.Config?.port ?? 0;
+                if (cfg > 0) return cfg;
+            }
+            return EditorPrefs.GetInt("McpServer_Port", 8080);
+        }
+
+        // ===================== Logs Persistence API =====================
+
+        private static void AppendLog(string message)
+        {
+            if (message == null) return;
+            s_logs.Add(message);
+            TrimLogs();
+        }
+
+        private static void TrimLogs()
+        {
+            while (s_logs.Count > s_maxLogLines)
+            {
+                s_logs.RemoveAt(0);
+            }
+        }
+
+        public static System.Collections.Generic.List<string> GetLogs()
+        {
+            return new System.Collections.Generic.List<string>(s_logs);
+        }
+
+        public static void ClearLogs()
+        {
+            s_logs.Clear();
+        }
+
+        public static void SetLogCapacity(int maxLines)
+        {
+            s_maxLogLines = Mathf.Clamp(maxLines, 10, 100000);
+            EditorPrefs.SetInt("UnityAIStudio.McpServer.Logs.MaxLines.Global", s_maxLogLines);
+            TrimLogs();
         }
     }
 }

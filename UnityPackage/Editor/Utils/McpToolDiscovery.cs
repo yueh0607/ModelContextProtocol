@@ -151,7 +151,7 @@ namespace UnityAIStudio.McpServer.Tools
             }
 
             // 创建工具
-            return SimpleMcpServerTool.Create(
+            var simpleTool = SimpleMcpServerTool.Create(
                 name: toolName,
                 description: description,
                 handler: async (args, ct) =>
@@ -159,6 +159,13 @@ namespace UnityAIStudio.McpServer.Tools
                     return await InvokeToolMethod(instance, method, args, ct);
                 }
             );
+            // 写入类别到协议元数据，供 UI 展示
+            if (simpleTool?.ProtocolTool != null)
+            {
+                simpleTool.ProtocolTool.Meta = simpleTool.ProtocolTool.Meta ?? new JObject();
+                simpleTool.ProtocolTool.Meta["category"] = category;
+            }
+            return simpleTool;
         }
 
         /// <summary>
@@ -223,21 +230,49 @@ namespace UnityAIStudio.McpServer.Tools
         /// </summary>
         private static string GetFriendlyTypeName(Type type)
         {
-            if (type == typeof(string)) return "string";
-            if (type == typeof(int)) return "int";
-            if (type == typeof(float)) return "float";
-            if (type == typeof(double)) return "double";
-            if (type == typeof(bool)) return "bool";
-            if (type == typeof(long)) return "long";
+            // 处理可空类型
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                var underlyingType = Nullable.GetUnderlyingType(type);
+                return $"{GetFriendlyTypeName(underlyingType)}?";
+            }
+
+            // 直接使用反射生成名称（无注册表）
+
+            // 数组类型
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+                var rank = type.GetArrayRank();
+                var brackets = rank == 1 ? "[]" : $"[{new string(',', rank - 1)}]";
+                return $"{GetFriendlyTypeName(elementType)}{brackets}";
+            }
 
             // 泛型类型
             if (type.IsGenericType)
             {
-                var genericTypeName = type.GetGenericTypeDefinition().Name;
-                var genericArgs = string.Join(", ", type.GetGenericArguments().Select(GetFriendlyTypeName));
-                return $"{genericTypeName.Split('`')[0]}<{genericArgs}>";
+                var genericDef = type.GetGenericTypeDefinition();
+                var genericArgs = type.GetGenericArguments();
+
+                // 默认泛型格式
+                var genericTypeName = genericDef.Name;
+                var argNamesStr = string.Join(", ", genericArgs.Select(GetFriendlyTypeName));
+                return $"{genericTypeName.Split('`')[0]}<{argNamesStr}>";
             }
 
+            // 枚举类型
+            if (type.IsEnum)
+            {
+                return $"{type.Name} (enum)";
+            }
+
+            // 接口类型
+            if (type.IsInterface)
+            {
+                return $"{type.Name} (interface)";
+            }
+
+            // 默认返回类型名
             return type.Name;
         }
 
@@ -247,7 +282,7 @@ namespace UnityAIStudio.McpServer.Tools
         private static async Task<CallToolResult> InvokeToolMethod(
             object instance,
             MethodInfo method,
-            JObject args,
+            JToken args,
             CancellationToken ct)
         {
             try
@@ -256,50 +291,103 @@ namespace UnityAIStudio.McpServer.Tools
                 var parameters = method.GetParameters();
                 var paramValues = new object[parameters.Length];
 
-                // 构建参数值
-                for (int i = 0; i < parameters.Length; i++)
+                // 支持两种传参形式：
+                // 1) JArray（推荐）：函数的 N 个参数按位置序列化
+                // 2) JObject（兼容）：按参数名键值映射
+                if (args is JArray arr)
                 {
-                    var param = parameters[i];
-                    var paramAttr = param.GetCustomAttribute<McpParameterAttribute>();
+                    int positionalIndex = 0;
+                    for (int i = 0; i < parameters.Length; i++)
+                    {
+                        var param = parameters[i];
+                        var paramAttr = param.GetCustomAttribute<McpParameterAttribute>();
 
-                    // 特殊处理CancellationToken
-                    if (param.ParameterType == typeof(CancellationToken))
-                    {
-                        paramValues[i] = ct;
-                        continue;
-                    }
+                        if (param.ParameterType == typeof(CancellationToken))
+                        {
+                            paramValues[i] = ct;
+                            continue;
+                        }
 
-                    // 从args中获取参数值
-                    string paramName = param.Name;
-                    if (args.ContainsKey(paramName))
-                    {
-                        try
+                        JToken token = positionalIndex < arr.Count ? arr[positionalIndex] : null;
+                        positionalIndex++;
+
+                        if (token != null && token.Type != JTokenType.Null)
                         {
-                            paramValues[i] = args[paramName].ToObject(param.ParameterType);
+                            try
+                            {
+                                paramValues[i] = token.ToObject(param.ParameterType);
+                                continue;
+                            }
+                            catch (Exception ex)
+                            {
+                                return CreateErrorResult($"Invalid parameter '{param.Name}': {ex.Message}");
+                            }
                         }
-                        catch (Exception ex)
+
+                        if (paramAttr?.Required == true)
                         {
-                            return CreateErrorResult($"Invalid parameter '{paramName}': {ex.Message}");
+                            return CreateErrorResult($"Required parameter '{param.Name}' is missing");
+                        }
+                        else if (paramAttr?.DefaultValue != null)
+                        {
+                            paramValues[i] = paramAttr.DefaultValue;
+                        }
+                        else if (param.HasDefaultValue)
+                        {
+                            paramValues[i] = param.DefaultValue;
+                        }
+                        else
+                        {
+                            paramValues[i] = param.ParameterType.IsValueType
+                                ? Activator.CreateInstance(param.ParameterType)
+                                : null;
                         }
                     }
-                    else if (paramAttr?.Required == true)
+                }
+                else
+                {
+                    var obj = args as JObject ?? new JObject();
+                    for (int i = 0; i < parameters.Length; i++)
                     {
-                        return CreateErrorResult($"Required parameter '{paramName}' is missing");
-                    }
-                    else if (paramAttr?.DefaultValue != null)
-                    {
-                        paramValues[i] = paramAttr.DefaultValue;
-                    }
-                    else if (param.HasDefaultValue)
-                    {
-                        paramValues[i] = param.DefaultValue;
-                    }
-                    else
-                    {
-                        // 使用类型默认值
-                        paramValues[i] = param.ParameterType.IsValueType
-                            ? Activator.CreateInstance(param.ParameterType)
-                            : null;
+                        var param = parameters[i];
+                        var paramAttr = param.GetCustomAttribute<McpParameterAttribute>();
+
+                        if (param.ParameterType == typeof(CancellationToken))
+                        {
+                            paramValues[i] = ct;
+                            continue;
+                        }
+
+                        string paramName = param.Name;
+                        if (obj.ContainsKey(paramName))
+                        {
+                            try
+                            {
+                                paramValues[i] = obj[paramName].ToObject(param.ParameterType);
+                            }
+                            catch (Exception ex)
+                            {
+                                return CreateErrorResult($"Invalid parameter '{paramName}': {ex.Message}");
+                            }
+                        }
+                        else if (paramAttr?.Required == true)
+                        {
+                            return CreateErrorResult($"Required parameter '{paramName}' is missing");
+                        }
+                        else if (paramAttr?.DefaultValue != null)
+                        {
+                            paramValues[i] = paramAttr.DefaultValue;
+                        }
+                        else if (param.HasDefaultValue)
+                        {
+                            paramValues[i] = param.DefaultValue;
+                        }
+                        else
+                        {
+                            paramValues[i] = param.ParameterType.IsValueType
+                                ? Activator.CreateInstance(param.ParameterType) 
+                                : null;
+                        }
                     }
                 }
 

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using UnityAIStudio.McpServer.Models;
 using UnityAIStudio.McpServer.Services;
 
@@ -24,7 +25,7 @@ namespace UnityAIStudio.McpServer.UI
         private string toolSearchFilter = "";
         private string selectedToolCategory = "All";
         private List<string> logMessages = new List<string>();
-        private const int MaxLogMessages = 100;
+        private int maxLogMessages = 100; // 默认 100，可在 UI 中调整
 
         public McpServerView(IMcpServerService service)
         {
@@ -39,6 +40,17 @@ namespace UnityAIStudio.McpServer.UI
             service.OnConnectionStatusChanged += OnConnectionStatusChanged;
             service.OnLogMessage += OnLogMessage;
             service.OnToolsListUpdated += OnToolsListUpdated;
+
+            // 载入日志上限（可选持久化）
+            maxLogMessages = EditorPrefs.GetInt("UnityAIStudio.McpServer.Logs.MaxLines", 100);
+
+            // 从全局缓冲恢复日志，避免关窗丢失
+            var persisted = McpServerManager.GetLogs();
+            if (persisted != null && persisted.Count > 0)
+            {
+                logMessages = new List<string>(persisted);
+                TrimLogsToCapacity();
+            }
         }
 
         public void OnDisable()
@@ -48,6 +60,9 @@ namespace UnityAIStudio.McpServer.UI
             service.OnConnectionStatusChanged -= OnConnectionStatusChanged;
             service.OnLogMessage -= OnLogMessage;
             service.OnToolsListUpdated -= OnToolsListUpdated;
+
+            // 保存日志上限
+            EditorPrefs.SetInt("UnityAIStudio.McpServer.Logs.MaxLines", maxLogMessages);
         }
 
         public void OnGUI()
@@ -86,6 +101,15 @@ namespace UnityAIStudio.McpServer.UI
 
             // Control Buttons
             DrawControlButtons();
+
+            GUILayout.Space(8);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("📘 Integration Guide", GUILayout.Width(180), GUILayout.Height(24)))
+            {
+                UnityAIStudio.McpServer.Docs.IntegrationGuideWindow.ShowWindow();
+            }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
         }
@@ -131,7 +155,11 @@ namespace UnityAIStudio.McpServer.UI
 
                 if (int.TryParse(portInputString, out int parsedPort))
                 {
-                    service.Config.port = parsedPort;
+                    if (service.Config.port != parsedPort)
+                    {
+                        service.Config.port = parsedPort;
+                        service.Config.Save(); // 立即持久化，避免编译或重载丢失
+                    } 
                 }
 
                 // Port availability indicator
@@ -315,7 +343,7 @@ namespace UnityAIStudio.McpServer.UI
 
             EditorGUILayout.BeginVertical(McpUIStyles.StatusBoxStyle);
 
-            // Search and filter card
+            // Search card（仅搜索框，不再分类/启用开关）
             DrawToolsFilter();
 
             GUILayout.Space(8);
@@ -337,14 +365,7 @@ namespace UnityAIStudio.McpServer.UI
 
             GUILayout.Space(5);
 
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("📁 Category:", EditorStyles.boldLabel, GUILayout.Width(80));
-            string[] categories = new[] { "All", "Scene", "Component", "Transform", "Editor", "Project", "Assets" };
-            selectedToolCategory = categories[EditorGUILayout.Popup(
-                System.Array.IndexOf(categories, selectedToolCategory),
-                categories
-            )];
-            EditorGUILayout.EndHorizontal();
+            // 分类筛选移除，仅展示搜索
 
             EditorGUILayout.EndVertical();
         }
@@ -353,9 +374,9 @@ namespace UnityAIStudio.McpServer.UI
         {
             var tools = service.GetAvailableTools();
             var filteredTools = tools.Where(t =>
-                (string.IsNullOrEmpty(toolSearchFilter) || t.name.ToLower().Contains(toolSearchFilter.ToLower()) ||
-                 t.description.ToLower().Contains(toolSearchFilter.ToLower())) &&
-                (selectedToolCategory == "All" || t.category == selectedToolCategory)
+                string.IsNullOrEmpty(toolSearchFilter)
+                || (t.name != null && t.name.ToLower().Contains(toolSearchFilter.ToLower()))
+                || (t.description != null && t.description.ToLower().Contains(toolSearchFilter.ToLower()))
             ).ToList();
 
             var toolCountStyle = new GUIStyle(EditorStyles.miniLabel)
@@ -386,12 +407,8 @@ namespace UnityAIStudio.McpServer.UI
 
             EditorGUILayout.BeginHorizontal(toolBoxStyle);
 
-            bool newEnabled = EditorGUILayout.Toggle(tool.enabled, GUILayout.Width(20));
-            if (newEnabled != tool.enabled)
-            {
-                tool.enabled = newEnabled;
-                service.SetToolEnabled(tool.name, newEnabled);
-            }
+            // 不再提供启用/关闭开关
+            GUILayout.Space(6);
 
             EditorGUILayout.BeginVertical();
             var toolNameStyle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 11 };
@@ -405,12 +422,13 @@ namespace UnityAIStudio.McpServer.UI
             EditorGUILayout.LabelField(tool.description, descStyle);
             EditorGUILayout.EndVertical();
 
+            // 展示类别标签（只读）
             var categoryStyle = new GUIStyle(EditorStyles.miniLabel)
             {
                 normal = { textColor = McpUIStyles.InfoColor },
                 alignment = TextAnchor.MiddleRight
             };
-            EditorGUILayout.LabelField($"[{tool.category}]", categoryStyle, GUILayout.Width(90));
+            EditorGUILayout.LabelField($"[" + (tool.category ?? "General") + "]", categoryStyle, GUILayout.Width(90));
 
             EditorGUILayout.EndHorizontal();
         }
@@ -424,9 +442,30 @@ namespace UnityAIStudio.McpServer.UI
             EditorGUILayout.BeginHorizontal();
             showLogs = EditorGUILayout.Foldout(showLogs, $"📝 Logs ({logMessages.Count})", true, McpUIStyles.FoldoutStyle);
             GUILayout.FlexibleSpace();
+
+            // 日志最大行设置
+            EditorGUILayout.LabelField("Max:", EditorStyles.miniLabel, GUILayout.Width(35));
+            int newCap = EditorGUILayout.IntField(maxLogMessages, GUILayout.Width(60));
+            newCap = Mathf.Clamp(newCap, 10, 10000);
+            if (newCap != maxLogMessages)
+            {
+                maxLogMessages = newCap;
+                TrimLogsToCapacity();
+                // 同步全局日志容量，持久化并裁剪全局缓冲
+                McpServerManager.SetLogCapacity(maxLogMessages);
+            }
+
+            // 导出按钮
+            if (GUILayout.Button("⬇ Export", GUILayout.Width(90), GUILayout.Height(22)))
+            {
+                ExportLogs();
+            }
+
+            // 清空按钮
             if (GUILayout.Button("🗑️ Clear", GUILayout.Width(90), GUILayout.Height(22)))
             {
                 logMessages.Clear();
+                McpServerManager.ClearLogs();
             }
             EditorGUILayout.EndHorizontal();
 
@@ -502,15 +541,45 @@ namespace UnityAIStudio.McpServer.UI
         private void OnLogMessage(string message)
         {
             logMessages.Add(message);
-            if (logMessages.Count > MaxLogMessages)
-            {
-                logMessages.RemoveAt(0);
-            }
+            TrimLogsToCapacity();
         }
 
         private void OnToolsListUpdated(List<McpTool> tools)
         {
             Debug.Log($"Tools list updated: {tools.Count} tools available");
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private void TrimLogsToCapacity()
+        {
+            while (logMessages.Count > maxLogMessages)
+            {
+                logMessages.RemoveAt(0);
+            }
+        }
+
+        private void ExportLogs()
+        {
+            var path = EditorUtility.SaveFilePanel(
+                "Export MCP Server Logs",
+                Application.dataPath,
+                "mcp_server_logs.txt",
+                "txt");
+            if (!string.IsNullOrEmpty(path))
+            {
+                try
+                {
+                    File.WriteAllLines(path, logMessages);
+                    Debug.Log($"Logs exported to: {path}");
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"Failed to export logs: {ex.Message}");
+                }
+            }
         }
 
         #endregion

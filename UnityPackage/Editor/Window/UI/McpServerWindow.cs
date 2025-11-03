@@ -27,9 +27,6 @@ namespace UnityAIStudio.McpServer.UI
             // Initialize view
             serverView = new McpServerView(serverService);
             serverView.OnEnable();
-
-            // Initialize styles
-            McpUIStyles.Initialize();
         }
 
         private void OnDisable()

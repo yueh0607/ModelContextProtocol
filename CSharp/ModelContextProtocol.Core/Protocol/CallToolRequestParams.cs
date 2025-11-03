@@ -21,9 +21,9 @@ namespace MapleModelContextProtocol.Protocol
         /// </summary>
         /// <remarks>
         /// 此对象包含要传递给工具的参数值。
-        /// 使用 JObject 以支持任意类型的参数（字符串、数字、对象、数组等）。
+        /// 使用 JToken 以支持任意类型的参数（字符串、数字、对象、数组等）。
         /// </remarks>
         [JsonProperty("arguments")]
-        public JObject Arguments { get; set; }
+        public JToken Arguments { get; set; }
     }
 }

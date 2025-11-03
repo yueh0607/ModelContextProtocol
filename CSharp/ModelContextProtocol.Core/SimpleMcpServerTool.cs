@@ -20,7 +20,7 @@ namespace MapleModelContextProtocol.Server
         public static SimpleMcpServerTool Create(
             string name,
             string description,
-            Func<JObject, CancellationToken, Task<CallToolResult>> handler)
+            Func<JToken, CancellationToken, Task<CallToolResult>> handler)
         {
             return new DelegateTool(name, description, handler);
         }
@@ -29,7 +29,7 @@ namespace MapleModelContextProtocol.Server
             string name,
             string description,
             TTarget target,
-            Func<TTarget, JObject, CancellationToken, Task<CallToolResult>> method)
+            Func<TTarget, JToken, CancellationToken, Task<CallToolResult>> method)
         {
             return new MethodTool<TTarget>(name, description, target, method);
         }
@@ -44,9 +44,9 @@ namespace MapleModelContextProtocol.Server
         private class DelegateTool : SimpleMcpServerTool
         {
             private readonly Tool _tool;
-            private readonly Func<JObject, CancellationToken, Task<CallToolResult>> _handler;
+            private readonly Func<JToken, CancellationToken, Task<CallToolResult>> _handler;
 
-            public DelegateTool(string name, string description, Func<JObject, CancellationToken, Task<CallToolResult>> handler)
+            public DelegateTool(string name, string description, Func<JToken, CancellationToken, Task<CallToolResult>> handler)
             {
                 _tool = new Tool
                 {
@@ -63,7 +63,7 @@ namespace MapleModelContextProtocol.Server
                 RequestContext<CallToolRequestParams> request,
                 CancellationToken cancellationToken)
             {
-                // Arguments 已经是 JObject 类型，直接使用
+                // Arguments 允许为对象或数组
                 var args = request.Params?.Arguments ?? new JObject();
 
                 // 调用实际的处理方法
@@ -78,9 +78,9 @@ namespace MapleModelContextProtocol.Server
         {
             private readonly Tool _tool;
             private readonly TTarget _target;
-            private readonly Func<TTarget, JObject, CancellationToken, Task<CallToolResult>> _method;
+            private readonly Func<TTarget, JToken, CancellationToken, Task<CallToolResult>> _method;
 
-            public MethodTool(string name, string description, TTarget target, Func<TTarget, JObject, CancellationToken, Task<CallToolResult>> method)
+            public MethodTool(string name, string description, TTarget target, Func<TTarget, JToken, CancellationToken, Task<CallToolResult>> method)
             {
                 _tool = new Tool
                 {
@@ -98,7 +98,7 @@ namespace MapleModelContextProtocol.Server
                 RequestContext<CallToolRequestParams> request,
                 CancellationToken cancellationToken)
             {
-                // Arguments 已经是 JObject 类型，直接使用
+                // Arguments 允许为对象或数组
                 var args = request.Params?.Arguments ?? new JObject();
 
                 // 调用实际的方法
@@ -129,13 +129,19 @@ namespace MapleModelContextProtocol.Examples
                 description: "回显输入的消息",
                 handler: async (args, ct) =>
                 {
-                    // 从参数中读取
-                    string message = args["message"]?.ToString() ?? "Hello World";
+                    string message = "Hello World";
 
-                    // 执行逻辑
+                    if (args is JObject o)
+                    {
+                        message = o["message"]?.ToString() ?? message;
+                    }
+                    else if (args is JArray a && a.Count > 0)
+                    {
+                        message = a[0]?.ToString() ?? message;
+                    }
+
                     string result = $"Echo: {message}";
 
-                    // 返回结果
                     return new CallToolResult
                     {
                         Content = new List<ContentBlock>
@@ -150,9 +156,17 @@ namespace MapleModelContextProtocol.Examples
         // 示例2: 使用类型安全的方法
         public class WeatherService
         {
-            public async Task<CallToolResult> GetWeather(JObject args, CancellationToken ct)
+            public async Task<CallToolResult> GetWeather(JToken args, CancellationToken ct)
             {
-                string city = args["city"]?.ToString();
+                string city = null;
+                if (args is JObject o)
+                {
+                    city = o["city"]?.ToString();
+                }
+                else if (args is JArray a && a.Count > 0)
+                {
+                    city = a[0]?.ToString();
+                }
 
                 if (string.IsNullOrEmpty(city))
                 {
@@ -197,24 +211,37 @@ namespace MapleModelContextProtocol.Examples
                 description: "执行数学计算",
                 handler: async (args, ct) =>
                 {
-                    double a = args["a"]?.ToObject<double>() ?? 0;
-                    double b = args["b"]?.ToObject<double>() ?? 0;
-                    string operation = args["operation"]?.ToString();
+                    double aVal = 0;
+                    double bVal = 0;
+                    string operation = null;
+
+                    if (args is JObject o)
+                    {
+                        aVal = o["a"]?.ToObject<double>() ?? 0;
+                        bVal = o["b"]?.ToObject<double>() ?? 0;
+                        operation = o["operation"]?.ToString();
+                    }
+                    else if (args is JArray arr)
+                    {
+                        if (arr.Count > 0) aVal = arr[0]?.ToObject<double>() ?? 0;
+                        if (arr.Count > 1) bVal = arr[1]?.ToObject<double>() ?? 0;
+                        if (arr.Count > 2) operation = arr[2]?.ToString();
+                    }
 
                     double result = 0;
                     switch (operation?.ToLower())
                     {
                         case "add":
-                            result = a + b;
+                            result = aVal + bVal;
                             break;
                         case "subtract":
-                            result = a - b;
+                            result = aVal - bVal;
                             break;
                         case "multiply":
-                            result = a * b;
+                            result = aVal * bVal;
                             break;
                         case "divide":
-                            result = b != 0 ? a / b : 0;
+                            result = bVal != 0 ? aVal / bVal : 0;
                             break;
                         default:
                             return new CallToolResult
