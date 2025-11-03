@@ -4,7 +4,9 @@
 
 ## 开始
 打开MCP工具设置，点击Start Server，开启MCP服务器
+
 <img width="326" height="265" alt="局部截取_20251103_202751" src="https://github.com/user-attachments/assets/b808bc0f-e647-41ec-9ca1-7d38e4e1d042" />
+
 <img width="1467" height="1118" alt="Unity exe_20251103_202823" src="https://github.com/user-attachments/assets/53f46fd5-a67f-4f8c-b2b7-4acf72d0b543" />
 
 于Cursor设置中修改MCP设置
@@ -23,7 +25,12 @@
 添加你的工具：
 
 完全通用的工具：Packages/com.yourcompany.modelcontextprotocol/Editor/BuiltInTools/McpServer.BuiltInTools.asmdef  (跟随此开源项目)
+
 项目特化的工具：McpServer.ProjectTools.asmdef(可放在任意位置)
+
+工具示例：
+
+<img width="972" height="762" alt="局部截取_20251103_203137" src="https://github.com/user-attachments/assets/680feffe-b857-4ca5-bd9c-4163bf122bae" />
 
 
 ## Contributors
