@@ -21,7 +21,7 @@ namespace UnityAIStudio.McpServer.Tools
 
         [McpTool(Description = "Get GameObject information by name", Category = "Scene")]
         public async Task<CallToolResult> GetGameObject(
-            [McpParameter("GameObject name to search for", Required = true, Example = "Main Camera")]
+            [McpParameter("GameObject name to search for", Example = "Main Camera")]
             string name,
             CancellationToken ct = default)
         {
@@ -50,9 +50,9 @@ namespace UnityAIStudio.McpServer.Tools
 
         [McpTool(Description = "Create a new GameObject", Category = "Scene")]
         public async Task<CallToolResult> CreateGameObject(
-            [McpParameter("Name for the new GameObject", Required = true, Example = "MyObject")]
+            [McpParameter("Name for the new GameObject", Example = "MyObject")]
             string name,
-            [McpParameter("Parent GameObject name (optional)", Required = false)]
+            [McpParameter("Parent GameObject name (optional)")]
             string parent = null,
             CancellationToken ct = default)
         {
@@ -76,7 +76,7 @@ namespace UnityAIStudio.McpServer.Tools
 
         [McpTool(Description = "List all GameObjects in scene", Category = "Scene")]
         public async Task<CallToolResult> ListGameObjects(
-            [McpParameter("Include inactive objects", Required = false)]
+            [McpParameter("Include inactive objects")]
             bool includeInactive = false,
             CancellationToken ct = default)
         {
@@ -98,13 +98,13 @@ namespace UnityAIStudio.McpServer.Tools
 
         [McpTool(Description = "Set GameObject position", Category = "Transform")]
         public async Task<CallToolResult> SetPosition(
-            [McpParameter("GameObject name", Required = true)]
+            [McpParameter("GameObject name")]
             string name,
-            [McpParameter("X coordinate", Required = false)]
+            [McpParameter("X coordinate")]
             float x = 0,
-            [McpParameter("Y coordinate", Required = false)]
+            [McpParameter("Y coordinate")]
             float y = 0,
-            [McpParameter("Z coordinate", Required = false)]
+            [McpParameter("Z coordinate")]
             float z = 0,
             CancellationToken ct = default)
         {
@@ -121,13 +121,13 @@ namespace UnityAIStudio.McpServer.Tools
 
         [McpTool(Description = "Set GameObject rotation (euler angles)", Category = "Transform")]
         public async Task<CallToolResult> SetRotation(
-            [McpParameter("GameObject name", Required = true)]
+            [McpParameter("GameObject name")]
             string name,
-            [McpParameter("X rotation (degrees)", Required = false)]
+            [McpParameter("X rotation (degrees)")]
             float x = 0,
-            [McpParameter("Y rotation (degrees)", Required = false)]
+            [McpParameter("Y rotation (degrees)")]
             float y = 0,
-            [McpParameter("Z rotation (degrees)", Required = false)]
+            [McpParameter("Z rotation (degrees)")]
             float z = 0,
             CancellationToken ct = default)
         {
@@ -144,13 +144,13 @@ namespace UnityAIStudio.McpServer.Tools
 
         [McpTool(Description = "Set GameObject scale", Category = "Transform")]
         public async Task<CallToolResult> SetScale(
-            [McpParameter("GameObject name", Required = true)]
+            [McpParameter("GameObject name")]
             string name,
-            [McpParameter("X scale", Required = false)]
+            [McpParameter("X scale")]
             float x = 1,
-            [McpParameter("Y scale", Required = false)]
+            [McpParameter("Y scale")]
             float y = 1,
-            [McpParameter("Z scale", Required = false)]
+            [McpParameter("Z scale")]
             float z = 1,
             CancellationToken ct = default)
         {
@@ -223,7 +223,7 @@ namespace UnityAIStudio.McpServer.Tools
 
         [McpTool(Description = "Control play mode", Category = "Editor")]
         public async Task<CallToolResult> PlayMode(
-            [McpParameter("Action: 'enter', 'exit', or 'toggle'", Required = true, Example = "enter")]
+            [McpParameter("Action: 'enter', 'exit', or 'toggle'", Example = "enter")]
             string action,
             CancellationToken ct = default)
         {

@@ -193,8 +193,9 @@ namespace UnityAIStudio.McpServer.Tools
                 // 构建参数行
                 var parts = new List<string> { $"- {paramName} ({paramType})" };
 
-                // 必需/可选标记
-                bool isRequired = paramAttr?.Required ?? !param.HasDefaultValue;
+                // 必需/可选标记：仅根据是否存在默认值判断（特性 DefaultValue 或 方法签名默认值）
+                bool hasDefault = (paramAttr?.DefaultValue != null) || param.HasDefaultValue;
+                bool isRequired = !hasDefault;
                 parts.Add(isRequired ? "[Required]" : "[Optional]");
 
                 // 参数描述
@@ -324,11 +325,8 @@ namespace UnityAIStudio.McpServer.Tools
                             }
                         }
 
-                        if (paramAttr?.Required == true)
-                        {
-                            return CreateErrorResult($"Required parameter '{param.Name}' is missing");
-                        }
-                        else if (paramAttr?.DefaultValue != null)
+                        // 缺参时仅当没有任何默认值才报错；否则使用特性默认值或方法签名默认值
+                        if (paramAttr?.DefaultValue != null)
                         {
                             paramValues[i] = paramAttr.DefaultValue;
                         }
@@ -338,9 +336,7 @@ namespace UnityAIStudio.McpServer.Tools
                         }
                         else
                         {
-                            paramValues[i] = param.ParameterType.IsValueType
-                                ? Activator.CreateInstance(param.ParameterType)
-                                : null;
+                            return CreateErrorResult($"Required parameter '{param.Name}' is missing");
                         }
                     }
                 }
@@ -370,10 +366,6 @@ namespace UnityAIStudio.McpServer.Tools
                                 return CreateErrorResult($"Invalid parameter '{paramName}': {ex.Message}");
                             }
                         }
-                        else if (paramAttr?.Required == true)
-                        {
-                            return CreateErrorResult($"Required parameter '{paramName}' is missing");
-                        }
                         else if (paramAttr?.DefaultValue != null)
                         {
                             paramValues[i] = paramAttr.DefaultValue;
@@ -384,9 +376,7 @@ namespace UnityAIStudio.McpServer.Tools
                         }
                         else
                         {
-                            paramValues[i] = param.ParameterType.IsValueType
-                                ? Activator.CreateInstance(param.ParameterType) 
-                                : null;
+                            return CreateErrorResult($"Required parameter '{paramName}' is missing");
                         }
                     }
                 }
