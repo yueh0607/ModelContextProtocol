@@ -127,8 +127,13 @@ namespace UnityAIStudio.McpServer.Tools
             // 确定类别
             string category = toolAttr.Category ?? classAttr?.Category ?? "General";
 
-            // 确定描述
+            // 确定描述 - 追加参数信息
             string description = toolAttr.Description ?? $"Execute {method.Name}";
+            string parameterInfo = BuildParameterDescription(method);
+            if (!string.IsNullOrEmpty(parameterInfo))
+            {
+                description = $"{description}\n\n{parameterInfo}";
+            }
 
             // 创建工具实例（如果方法不是静态的）
             object instance = null;
@@ -154,6 +159,86 @@ namespace UnityAIStudio.McpServer.Tools
                     return await InvokeToolMethod(instance, method, args, ct);
                 }
             );
+        }
+
+        /// <summary>
+        /// 构建参数描述信息
+        /// </summary>
+        private static string BuildParameterDescription(MethodInfo method)
+        {
+            var parameters = method.GetParameters()
+                .Where(p => p.ParameterType != typeof(CancellationToken)) // 排除系统参数
+                .ToList();
+
+            if (parameters.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var descriptionParts = new List<string> { "Parameters:" };
+
+            foreach (var param in parameters)
+            {
+                var paramAttr = param.GetCustomAttribute<McpParameterAttribute>();
+                var paramName = param.Name;
+                var paramType = GetFriendlyTypeName(param.ParameterType);
+
+                // 构建参数行
+                var parts = new List<string> { $"- {paramName} ({paramType})" };
+
+                // 必需/可选标记
+                bool isRequired = paramAttr?.Required ?? !param.HasDefaultValue;
+                parts.Add(isRequired ? "[Required]" : "[Optional]");
+
+                // 参数描述
+                if (!string.IsNullOrEmpty(paramAttr?.Description))
+                {
+                    parts.Add($"- {paramAttr.Description}");
+                }
+
+                // 默认值
+                if (paramAttr?.DefaultValue != null)
+                {
+                    parts.Add($"(Default: {paramAttr.DefaultValue})");
+                }
+                else if (param.HasDefaultValue && param.DefaultValue != null)
+                {
+                    parts.Add($"(Default: {param.DefaultValue})");
+                }
+
+                // 示例值
+                if (!string.IsNullOrEmpty(paramAttr?.Example))
+                {
+                    parts.Add($"(Example: {paramAttr.Example})");
+                }
+
+                descriptionParts.Add(string.Join(" ", parts));
+            }
+
+            return string.Join("\n", descriptionParts);
+        }
+
+        /// <summary>
+        /// 获取友好的类型名称
+        /// </summary>
+        private static string GetFriendlyTypeName(Type type)
+        {
+            if (type == typeof(string)) return "string";
+            if (type == typeof(int)) return "int";
+            if (type == typeof(float)) return "float";
+            if (type == typeof(double)) return "double";
+            if (type == typeof(bool)) return "bool";
+            if (type == typeof(long)) return "long";
+
+            // 泛型类型
+            if (type.IsGenericType)
+            {
+                var genericTypeName = type.GetGenericTypeDefinition().Name;
+                var genericArgs = string.Join(", ", type.GetGenericArguments().Select(GetFriendlyTypeName));
+                return $"{genericTypeName.Split('`')[0]}<{genericArgs}>";
+            }
+
+            return type.Name;
         }
 
         /// <summary>

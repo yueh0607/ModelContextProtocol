@@ -30,7 +30,7 @@ namespace UnityAIStudio.McpServer.Tools
                 var go = GameObject.Find(name);
                 if (go == null)
                 {
-                    return CreateError($"GameObject '{name}' not found");
+                    return McpUtils.Error($"GameObject '{name}' not found");
                 }
 
                 var components = go.GetComponents<Component>().Select(c => c.GetType().Name);
@@ -44,7 +44,7 @@ namespace UnityAIStudio.McpServer.Tools
 - Scale: {go.transform.localScale}
 - Components: {string.Join(", ", components)}";
 
-                return CreateSuccess(info);
+                return McpUtils.Success(info);
             });
         }
 
@@ -70,7 +70,7 @@ namespace UnityAIStudio.McpServer.Tools
                 }
 
                 Undo.RegisterCreatedObjectUndo(go, $"Create {name}");
-                return CreateSuccess($"Created GameObject '{name}'");
+                return McpUtils.Success($"Created GameObject '{name}'");
             });
         }
 
@@ -88,7 +88,7 @@ namespace UnityAIStudio.McpServer.Tools
                         .ToArray()
                     : Object.FindObjectsOfType<GameObject>();
                 var names = objects.Select(go => go.name).OrderBy(n => n).ToArray();
-                return CreateSuccess($"Found {names.Length} GameObjects:\n{string.Join("\n", names)}");
+                return McpUtils.Success($"Found {names.Length} GameObjects:\n{string.Join("\n", names)}");
             });
         }
 
@@ -111,11 +111,11 @@ namespace UnityAIStudio.McpServer.Tools
             return await UnityMainThreadScheduler.ExecuteAsync(() =>
             {
                 var go = GameObject.Find(name);
-                if (go == null) return CreateError($"GameObject '{name}' not found");
+                if (go == null) return McpUtils.Error($"GameObject '{name}' not found");
 
                 Undo.RecordObject(go.transform, "Set Position");
                 go.transform.position = new Vector3(x, y, z);
-                return CreateSuccess($"Set position of '{name}' to ({x}, {y}, {z})");
+                return McpUtils.Success($"Set position of '{name}' to ({x}, {y}, {z})");
             });
         }
 
@@ -134,11 +134,11 @@ namespace UnityAIStudio.McpServer.Tools
             return await UnityMainThreadScheduler.ExecuteAsync(() =>
             {
                 var go = GameObject.Find(name);
-                if (go == null) return CreateError($"GameObject '{name}' not found");
+                if (go == null) return McpUtils.Error($"GameObject '{name}' not found");
 
                 Undo.RecordObject(go.transform, "Set Rotation");
                 go.transform.rotation = Quaternion.Euler(x, y, z);
-                return CreateSuccess($"Set rotation of '{name}' to ({x}, {y}, {z})");
+                return McpUtils.Success($"Set rotation of '{name}' to ({x}, {y}, {z})");
             });
         }
 
@@ -157,11 +157,11 @@ namespace UnityAIStudio.McpServer.Tools
             return await UnityMainThreadScheduler.ExecuteAsync(() =>
             {
                 var go = GameObject.Find(name);
-                if (go == null) return CreateError($"GameObject '{name}' not found");
+                if (go == null) return McpUtils.Error($"GameObject '{name}' not found");
 
                 Undo.RecordObject(go.transform, "Set Scale");
                 go.transform.localScale = new Vector3(x, y, z);
-                return CreateSuccess($"Set scale of '{name}' to ({x}, {y}, {z})");
+                return McpUtils.Success($"Set scale of '{name}' to ({x}, {y}, {z})");
             });
         }
 
@@ -181,7 +181,7 @@ namespace UnityAIStudio.McpServer.Tools
 - Is Dirty: {scene.isDirty}
 - Is Loaded: {scene.isLoaded}
 - Root Object Count: {scene.rootCount}";
-                return CreateSuccess(info);
+                return McpUtils.Success(info);
             });
         }
 
@@ -193,11 +193,11 @@ namespace UnityAIStudio.McpServer.Tools
                 var scene = EditorSceneManager.GetActiveScene();
                 if (string.IsNullOrEmpty(scene.path))
                 {
-                    return CreateError("Scene has not been saved yet. Save it manually first.");
+                    return McpUtils.Error("Scene has not been saved yet. Save it manually first.");
                 }
 
                 bool saved = EditorSceneManager.SaveScene(scene);
-                return saved ? CreateSuccess($"Saved scene '{scene.name}'") : CreateError("Failed to save scene");
+                return saved ? McpUtils.Success($"Saved scene '{scene.name}'") : McpUtils.Error("Failed to save scene");
             });
         }
 
@@ -217,7 +217,7 @@ namespace UnityAIStudio.McpServer.Tools
 - Data Path: {Application.dataPath}
 - Is Playing: {EditorApplication.isPlaying}
 - Is Compiling: {EditorApplication.isCompiling}";
-                return CreateSuccess(info);
+                return McpUtils.Success(info);
             });
         }
 
@@ -232,45 +232,23 @@ namespace UnityAIStudio.McpServer.Tools
                 switch (action.ToLower())
                 {
                     case "enter":
-                        if (EditorApplication.isPlaying) return CreateSuccess("Already in play mode");
+                        if (EditorApplication.isPlaying) return McpUtils.Success("Already in play mode");
                         EditorApplication.isPlaying = true;
-                        return CreateSuccess("Entering play mode...");
+                        return McpUtils.Success("Entering play mode...");
 
                     case "exit":
-                        if (!EditorApplication.isPlaying) return CreateSuccess("Not in play mode");
+                        if (!EditorApplication.isPlaying) return McpUtils.Success("Not in play mode");
                         EditorApplication.isPlaying = false;
-                        return CreateSuccess("Exiting play mode...");
+                        return McpUtils.Success("Exiting play mode...");
 
                     case "toggle":
                         EditorApplication.isPlaying = !EditorApplication.isPlaying;
-                        return CreateSuccess(EditorApplication.isPlaying ? "Entering play mode..." : "Exiting play mode...");
+                        return McpUtils.Success(EditorApplication.isPlaying ? "Entering play mode..." : "Exiting play mode...");
 
                     default:
-                        return CreateError("Invalid action. Use 'enter', 'exit', or 'toggle'");
+                        return McpUtils.Error("Invalid action. Use 'enter', 'exit', or 'toggle'");
                 }
             });
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        private CallToolResult CreateSuccess(string message)
-        {
-            return new CallToolResult
-            {
-                Content = new List<ContentBlock> { new TextContentBlock { Text = message } },
-                IsError = false
-            };
-        }
-
-        private CallToolResult CreateError(string message)
-        {
-            return new CallToolResult
-            {
-                Content = new List<ContentBlock> { new TextContentBlock { Text = $"Error: {message}" } },
-                IsError = true
-            };
         }
 
         #endregion

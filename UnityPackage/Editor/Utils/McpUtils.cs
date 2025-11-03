@@ -6,7 +6,7 @@ namespace UnityAIStudio.McpServer.Tools
     /// <summary>
     /// MCP 工具辅助方法 - 提供常用的工具返回值创建方法
     /// </summary>
-    public static class McpToolHelpers
+    public static class McpUtils
     {
         /// <summary>
         /// 创建成功结果
