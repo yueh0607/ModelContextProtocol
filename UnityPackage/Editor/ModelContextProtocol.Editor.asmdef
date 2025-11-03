@@ -1,0 +1,19 @@
+{
+    "name": "ModelContextProtocol.Editor",
+    "rootNamespace": "ModelContextProtocol.Editor",
+    "references": [
+        "ModelContextProtocol.Runtime",
+        "Unity.Nuget.Newtonsoft.Json"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

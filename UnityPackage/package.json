@@ -1,0 +1,27 @@
+{
+  "name": "com.yourcompany.modelcontextprotocol",
+  "version": "1.0.0",
+  "displayName": "Model Context Protocol",
+  "description": "MCP (Model Context Protocol) Server implementation for Unity Editor. Enables AI assistants to interact with Unity projects through a standardized protocol.",
+  "unity": "2022.3",
+  "unityRelease": "0f1",
+  "documentationUrl": "https://github.com/yourcompany/ModelContextProtocol",
+  "changelogUrl": "https://github.com/yourcompany/ModelContextProtocol/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/yourcompany/ModelContextProtocol/blob/main/LICENSE.md",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "assistant",
+    "protocol",
+    "editor",
+    "tools"
+  ],
+  "author": {
+    "name": "Your Company",
+    "email": "contact@yourcompany.com",
+    "url": "https://yourcompany.com"
+  }
+}
