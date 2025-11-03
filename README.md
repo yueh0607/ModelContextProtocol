@@ -9,5 +9,6 @@
 
 
 ## Contributors
-- Zhenpeng Yue
-- Yuyang He
+<a href="https://github.com/yueh0607/ModelContextProtocol/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=yueh0607/ModelContextProtocol" />
+</a>
