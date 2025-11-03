@@ -226,13 +226,13 @@ namespace UnityAIStudio.McpServer.Services
 
         private void RegisterTools(McpServerOptions options)
         {
-            // 创建并注册Core工具
-            coreTools = UnityToolRegistry.CreateAllTools();
+            // 使用反射自动发现工具（内置 + 用户自定义）
+            coreTools = McpToolDiscovery.DiscoverAllTools();
 
             // 注册到服务器选项
             options.ToolCollection = coreTools;
 
-            Log($"Registered {coreTools.Count} Unity tools");
+            Log($"Registered {coreTools.Count} MCP tools (built-in + user-defined)");
         }
 
         public List<McpTool> GetAvailableTools()

@@ -1,0 +1,246 @@
+using System.Threading;
+using System.Threading.Tasks;
+using MapleModelContextProtocol.Protocol;
+using UnityEngine;
+using UnityEditor;
+using UnityAIStudio.McpServer.Tools.Attributes;
+using System.Collections.Generic;
+
+namespace UnityAIStudio.McpServer.Tools
+{
+    /// <summary>
+    /// 项目自定义工具示例
+    ///
+    /// 使用方法：
+    /// 1. 复制此文件并重命名（去掉.example后缀）
+    /// 2. 根据你的项目需求添加工具
+    /// 3. 工具会被自动发现和注册
+    ///
+    /// 注意：
+    /// - 必须添加 [McpToolClass] 特性
+    /// - 方法必须添加 [McpTool] 特性
+    /// - 访问Unity API必须使用 UnityMainThreadScheduler
+    /// </summary>
+    [McpToolClass(Category = "Project", Description = "Project-specific custom tools")]
+    public class ProjectTools
+    {
+        /// <summary>
+        /// 示例工具1: 简单的问候工具
+        /// </summary>
+        [McpTool(Description = "Say hello to someone", Category = "Demo")]
+        public Task<CallToolResult> SayHello(
+            [McpParameter("Person's name", Required = true, Example = "Alice")]
+            string name,
+            CancellationToken ct = default)
+        {
+            string message = $"Hello, {name}! Welcome to MCP Unity Tools!";
+            Debug.Log($"[ProjectTools] {message}");
+
+            return Task.FromResult(new CallToolResult
+            {
+                Content = new List<ContentBlock>
+                {
+                    new TextContentBlock { Text = message }
+                },
+                IsError = false
+            });
+        }
+
+        /// <summary>
+        /// 示例工具2: 创建特定类型的GameObject
+        /// </summary>
+        [McpTool(Description = "Create a cube with specific size and color", Category = "Custom")]
+        public async Task<CallToolResult> CreateColoredCube(
+            [McpParameter("Cube name", Required = true, Example = "MyCube")]
+            string name,
+            [McpParameter("Cube size", Required = false)]
+            float size = 1.0f,
+            [McpParameter("Color (red/green/blue/yellow)", Required = false)]
+            string color = "red",
+            CancellationToken ct = default)
+        {
+            return await UnityMainThreadScheduler.ExecuteAsync(() =>
+            {
+                // 创建立方体
+                var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cube.name = name;
+                cube.transform.localScale = Vector3.one * size;
+
+                // 设置颜色
+                var renderer = cube.GetComponent<Renderer>();
+                var mat = new Material(Shader.Find("Standard"));
+
+                switch (color.ToLower())
+                {
+                    case "red":
+                        mat.color = Color.red;
+                        break;
+                    case "green":
+                        mat.color = Color.green;
+                        break;
+                    case "blue":
+                        mat.color = Color.blue;
+                        break;
+                    case "yellow":
+                        mat.color = Color.yellow;
+                        break;
+                    default:
+                        mat.color = Color.white;
+                        break;
+                }
+
+                renderer.material = mat;
+
+                Undo.RegisterCreatedObjectUndo(cube, $"Create {name}");
+
+                return new CallToolResult
+                {
+                    Content = new List<ContentBlock>
+                    {
+                        new TextContentBlock { Text = $"Created {color} cube '{name}' with size {size}" }
+                    },
+                    IsError = false
+                };
+            });
+        }
+
+        /// <summary>
+        /// 示例工具3: 批量操作
+        /// </summary>
+        [McpTool(Description = "Find all objects with specific tag", Category = "Custom")]
+        public async Task<CallToolResult> FindByTag(
+            [McpParameter("Tag to search for", Required = true, Example = "Player")]
+            string tag,
+            CancellationToken ct = default)
+        {
+            return await UnityMainThreadScheduler.ExecuteAsync(() =>
+            {
+                var objects = GameObject.FindGameObjectsWithTag(tag);
+
+                if (objects.Length == 0)
+                {
+                    return new CallToolResult
+                    {
+                        Content = new List<ContentBlock>
+                        {
+                            new TextContentBlock { Text = $"No objects found with tag '{tag}'" }
+                        },
+                        IsError = false
+                    };
+                }
+
+                var names = string.Join("\n", objects.Select(o => $"  - {o.name}"));
+                return new CallToolResult
+                {
+                    Content = new List<ContentBlock>
+                    {
+                        new TextContentBlock { Text = $"Found {objects.Length} objects with tag '{tag}':\n{names}" }
+                    },
+                    IsError = false
+                };
+            });
+        }
+
+        /// <summary>
+        /// 示例工具4: 资源加载
+        /// </summary>
+        [McpTool(Description = "Load prefab and instantiate", Category = "Assets")]
+        public async Task<CallToolResult> InstantiatePrefab(
+            [McpParameter("Prefab path (relative to Resources folder)", Required = true, Example = "Prefabs/MyPrefab")]
+            string path,
+            [McpParameter("Instance name (optional)", Required = false)]
+            string instanceName = null,
+            CancellationToken ct = default)
+        {
+            return await UnityMainThreadScheduler.ExecuteAsync(() =>
+            {
+                var prefab = Resources.Load<GameObject>(path);
+                if (prefab == null)
+                {
+                    return new CallToolResult
+                    {
+                        Content = new List<ContentBlock>
+                        {
+                            new TextContentBlock { Text = $"Prefab not found at path: Resources/{path}" }
+                        },
+                        IsError = true
+                    };
+                }
+
+                var instance = Object.Instantiate(prefab);
+                if (!string.IsNullOrEmpty(instanceName))
+                {
+                    instance.name = instanceName;
+                }
+
+                Undo.RegisterCreatedObjectUndo(instance, "Instantiate Prefab");
+
+                return new CallToolResult
+                {
+                    Content = new List<ContentBlock>
+                    {
+                        new TextContentBlock { Text = $"Instantiated prefab '{path}' as '{instance.name}'" }
+                    },
+                    IsError = false
+                };
+            });
+        }
+
+        /// <summary>
+        /// 示例工具5: 编辑器功能集成
+        /// </summary>
+        [McpTool(Description = "Take a screenshot", Category = "Editor")]
+        public async Task<CallToolResult> TakeScreenshot(
+            [McpParameter("File name (without extension)", Required = true, Example = "MyScreenshot")]
+            string fileName,
+            [McpParameter("Scale factor", Required = false)]
+            int scale = 1,
+            CancellationToken ct = default)
+        {
+            return await UnityMainThreadScheduler.ExecuteAsync(() =>
+            {
+                string path = $"{Application.dataPath}/../Screenshots/{fileName}.png";
+                System.IO.Directory.CreateDirectory($"{Application.dataPath}/../Screenshots");
+
+                ScreenCapture.CaptureScreenshot(path, scale);
+
+                return new CallToolResult
+                {
+                    Content = new List<ContentBlock>
+                    {
+                        new TextContentBlock { Text = $"Screenshot saved to: {path}" }
+                    },
+                    IsError = false
+                };
+            });
+        }
+
+        // ============================================================
+        // 添加你自己的工具到这里！
+        // ============================================================
+
+        /*
+        [McpTool(Description = "Your tool description here")]
+        public async Task<CallToolResult> YourToolName(
+            [McpParameter("Parameter description", Required = true)]
+            string paramName,
+            CancellationToken ct = default)
+        {
+            return await UnityMainThreadScheduler.ExecuteAsync(() =>
+            {
+                // Your Unity API calls here
+                // ...
+
+                return new CallToolResult
+                {
+                    Content = new List<ContentBlock>
+                    {
+                        new TextContentBlock { Text = "Tool executed successfully!" }
+                    },
+                    IsError = false
+                };
+            });
+        }
+        */
+    }
+}
