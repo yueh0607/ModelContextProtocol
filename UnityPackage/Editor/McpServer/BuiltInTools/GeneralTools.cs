@@ -33,19 +33,18 @@ namespace UnityAIStudio.McpServer.Tools
                     return CreateError($"GameObject '{name}' not found");
                 }
 
-                var info = new
-                {
-                    name = go.name,
-                    tag = go.tag,
-                    layer = LayerMask.LayerToName(go.layer),
-                    active = go.activeSelf,
-                    position = go.transform.position.ToString(),
-                    rotation = go.transform.rotation.eulerAngles.ToString(),
-                    scale = go.transform.localScale.ToString(),
-                    components = go.GetComponents<Component>().Select(c => c.GetType().Name).ToArray()
-                };
+                var components = go.GetComponents<Component>().Select(c => c.GetType().Name);
+                var info = $@"GameObject Info:
+- Name: {go.name}
+- Tag: {go.tag}
+- Layer: {LayerMask.LayerToName(go.layer)}
+- Active: {go.activeSelf}
+- Position: {go.transform.position}
+- Rotation: {go.transform.rotation.eulerAngles}
+- Scale: {go.transform.localScale}
+- Components: {string.Join(", ", components)}";
 
-                return CreateSuccess($"GameObject Info:\n{JsonUtility.ToJson(info, true)}");
+                return CreateSuccess(info);
             });
         }
 
@@ -176,15 +175,13 @@ namespace UnityAIStudio.McpServer.Tools
             return await UnityMainThreadScheduler.ExecuteAsync(() =>
             {
                 var scene = EditorSceneManager.GetActiveScene();
-                var info = new
-                {
-                    name = scene.name,
-                    path = scene.path,
-                    isDirty = scene.isDirty,
-                    isLoaded = scene.isLoaded,
-                    rootObjectCount = scene.rootCount
-                };
-                return CreateSuccess($"Scene Info:\n{JsonUtility.ToJson(info, true)}");
+                var info = $@"Scene Info:
+- Name: {scene.name}
+- Path: {scene.path}
+- Is Dirty: {scene.isDirty}
+- Is Loaded: {scene.isLoaded}
+- Root Object Count: {scene.rootCount}";
+                return CreateSuccess(info);
             });
         }
 
@@ -213,16 +210,14 @@ namespace UnityAIStudio.McpServer.Tools
         {
             return await UnityMainThreadScheduler.ExecuteAsync(() =>
             {
-                var info = new
-                {
-                    projectName = Application.productName,
-                    unityVersion = Application.unityVersion,
-                    platform = Application.platform.ToString(),
-                    dataPath = Application.dataPath,
-                    isPlaying = EditorApplication.isPlaying,
-                    isCompiling = EditorApplication.isCompiling
-                };
-                return CreateSuccess($"Project Info:\n{JsonUtility.ToJson(info, true)}");
+                var info = $@"Project Info:
+- Project Name: {Application.productName}
+- Unity Version: {Application.unityVersion}
+- Platform: {Application.platform}
+- Data Path: {Application.dataPath}
+- Is Playing: {EditorApplication.isPlaying}
+- Is Compiling: {EditorApplication.isCompiling}";
+                return CreateSuccess(info);
             });
         }
 
