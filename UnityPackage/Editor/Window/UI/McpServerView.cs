@@ -174,6 +174,25 @@ namespace UnityAIStudio.McpServer.UI
             }
             EditorGUILayout.EndHorizontal();
 
+            GUILayout.Space(8);
+
+            // Auto-restart after compile setting
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Auto-restart after compile:", EditorStyles.boldLabel, GUILayout.Width(200));
+            bool autoRestart = McpServerManager.GetAutoRestartAfterCompile();
+            bool newAutoRestart = EditorGUILayout.Toggle(autoRestart, GUILayout.Width(20));
+            if (newAutoRestart != autoRestart)
+            {
+                McpServerManager.SetAutoRestartAfterCompile(newAutoRestart);
+            }
+
+            var hintStyle = new GUIStyle(EditorStyles.miniLabel)
+            {
+                normal = { textColor = new Color(0.6f, 0.6f, 0.6f) }
+            };
+            EditorGUILayout.LabelField("(Automatically restart server after script compilation)", hintStyle);
+            EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.EndVertical();
         }
 

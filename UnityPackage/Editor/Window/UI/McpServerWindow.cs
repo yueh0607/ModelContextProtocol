@@ -21,8 +21,8 @@ namespace UnityAIStudio.McpServer.UI
 
         private void OnEnable()
         {
-            // Initialize service - 使用基于Core的新实现
-            serverService = new McpServerServiceCore();
+            // 使用持久化的服务管理器（而不是每次创建新实例）
+            serverService = McpServerManager.GetOrCreateInstance();
 
             // Initialize view
             serverView = new McpServerView(serverService);
@@ -34,8 +34,10 @@ namespace UnityAIStudio.McpServer.UI
 
         private void OnDisable()
         {
+            // 只清理 view，不销毁 service（保持服务器运行）
             serverView?.OnDisable();
-            serverService?.Dispose();
+            // 注释掉：serverService?.Dispose();
+            // 服务器将继续在后台运行，即使窗口关闭
         }
 
         private void OnGUI()
@@ -48,7 +50,8 @@ namespace UnityAIStudio.McpServer.UI
 
         private void Update()
         {
-            serverService?.Update();
+            // 通过管理器更新服务
+            McpServerManager.Update();
             Repaint();
         }
     }
