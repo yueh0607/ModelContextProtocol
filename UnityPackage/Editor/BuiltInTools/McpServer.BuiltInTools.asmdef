@@ -1,9 +1,7 @@
 {
     "name": "McpServer.BuiltInTools",
-    "rootNamespace": "UnityAIStudio.McpServer.Tools",
     "references": [
-        "ModelContextProtocol.Runtime",
-        "Unity.Nuget.Newtonsoft.Json"
+        "ModelContextProtocol.Editor"
     ],
     "includePlatforms": [
         "Editor"

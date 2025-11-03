@@ -24,20 +24,15 @@ namespace UnityAIStudio.McpServer.Tools
         {
             var tools = new List<SimpleMcpServerTool>();
 
-            // 1. 从内置工具程序集发现（当前程序集）
-            var builtInTools = DiscoverTools(Assembly.GetExecutingAssembly());
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            var builtInTools = DiscoverTools(GetAssemblyByName(assemblies, "McpServer.BuiltInTools"));
             tools.AddRange(builtInTools);
             Debug.Log($"[MCP Discovery] Discovered {builtInTools.Count} built-in tools");
 
-            // 2. 从用户程序集发现（没有 asmdef 的默认程序集）
             try
             {
-                // 查找包含 UnityAIStudio.McpServer 命名空间但不是当前程序集的程序集
-                var userAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                    .FirstOrDefault(a => !a.IsDynamic
-                        && a != Assembly.GetExecutingAssembly()
-                        && a.GetName().Name.Contains("Assembly-CSharp-Editor"));
-
+                var userAssembly = GetAssemblyByName(assemblies,"McpServer.ProjectTools");
                 if (userAssembly != null)
                 {
                     var userTools = DiscoverTools(userAssembly);
@@ -54,6 +49,15 @@ namespace UnityAIStudio.McpServer.Tools
             return tools;
         }
 
+        // 获取指定名称的程序集
+        private static Assembly GetAssemblyByName(IEnumerable<Assembly> assemblies, string assemblyName)
+        {
+            return assemblies
+                .FirstOrDefault(a => !a.IsDynamic
+                    &&a.GetName().Name == assemblyName);
+        }
+
+
         /// <summary>
         /// 从指定程序集中发现所有MCP工具
         /// </summary>
@@ -68,7 +72,10 @@ namespace UnityAIStudio.McpServer.Tools
 
             // 查找所有带有McpToolClass特性的类
             var toolClasses = assembly.GetTypes()
-                .Where(t => t.GetCustomAttribute<McpToolClassAttribute>() != null)
+                .Where(t => t.GetCustomAttribute<McpToolClassAttribute>() != null
+                    && !t.IsAbstract
+                    && t.IsClass
+                )
                 .ToList();
 
             Debug.Log($"[MCP Discovery] Found {toolClasses.Count} tool classes");
