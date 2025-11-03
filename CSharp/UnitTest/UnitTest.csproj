@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\McpServer\McpServer.csproj" />
+    <ProjectReference Include="..\ModelContextProtocol.Core\ModelContextProtocol.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
