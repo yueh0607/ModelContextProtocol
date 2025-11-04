@@ -23,5 +23,17 @@
     "name": "Your Company",
     "email": "contact@yourcompany.com",
     "url": "https://yourcompany.com"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "System.Runtime.CompilerServices.Unsafe",
+      "description": "System.Runtime.CompilerServices.Unsafe dependency required for runtime compilation support",
+      "path": "Samples~/System.Runtime.CompilerServices.Unsafe"
+    },
+    {
+      "displayName": "System.Threading.Tasks.Extensions",
+      "description": "System.Threading.Tasks.Extensions dependency for async task support",
+      "path": "Samples~/System.Threading.Tasks.Extensions"
+    }
+  ]
 }

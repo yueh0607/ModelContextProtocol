@@ -12,7 +12,7 @@ PluginImporter:
   validateReferences: 1
   platformData:
   - first:
-      Any:
+      Any: 
     second:
       enabled: 0
       settings: {}
@@ -21,8 +21,8 @@ PluginImporter:
     second:
       enabled: 1
       settings:
-        DefaultValueInitialized: true
         CPU: AnyCPU
+        DefaultValueInitialized: true
         OS: AnyOS
   - first:
       Windows Store Apps: WindowsStoreApps
@@ -30,6 +30,6 @@ PluginImporter:
       enabled: 0
       settings:
         CPU: AnyCPU
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
