@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示一个图标，可用于直观地识别实现、资源、工具或提示。

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示服务器对客户端发起的<see cref="RequestMethods.PromptsList"/>请求的响应，包含可用的提示。

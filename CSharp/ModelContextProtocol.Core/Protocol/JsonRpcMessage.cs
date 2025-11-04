@@ -3,7 +3,7 @@ using System.ComponentModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示模型上下文协议 (MCP) 中使用的任何 JSON-RPC 消息。

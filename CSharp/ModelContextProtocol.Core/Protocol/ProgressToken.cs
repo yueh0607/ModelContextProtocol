@@ -2,7 +2,7 @@
 using System.Globalization;
 using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示进度令牌，可以是字符串或整数。

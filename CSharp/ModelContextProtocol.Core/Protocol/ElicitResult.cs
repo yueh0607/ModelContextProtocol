@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端对 Elicit 请求的响应。

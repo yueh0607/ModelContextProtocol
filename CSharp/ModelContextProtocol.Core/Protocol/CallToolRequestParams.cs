@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端通过 <see cref="RequestMethods.ToolsCall"/> 请求调用服务器提供的工具时使用的参数。

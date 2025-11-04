@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示模型上下文协议中资源的二进制内容。

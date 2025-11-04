@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 提供 MCP 实现的名称和版本。

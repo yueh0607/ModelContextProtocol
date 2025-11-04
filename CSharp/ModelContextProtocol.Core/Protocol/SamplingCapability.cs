@@ -2,10 +2,10 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using MapleModelContextProtocol.Client;
+using ModelContextProtocol.Client;
 using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端使用 AI 模型生成文本或其他内容的能力。

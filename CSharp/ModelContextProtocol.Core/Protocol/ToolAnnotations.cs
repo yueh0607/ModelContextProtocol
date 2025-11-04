@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示向客户端描述 <see cref="Tool"/> 的附加属性。

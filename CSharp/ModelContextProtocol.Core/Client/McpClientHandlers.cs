@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MapleModelContextProtocol.Protocol;
+using ModelContextProtocol.Protocol;
 
-namespace MapleModelContextProtocol.Client
+namespace ModelContextProtocol.Client
 {
     public class McpClientHandlers
     {

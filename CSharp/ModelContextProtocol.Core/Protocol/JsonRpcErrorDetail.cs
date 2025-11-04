@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示 JSON-RPC 错误响应的详细错误信息。

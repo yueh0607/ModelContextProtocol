@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using MapleModelContextProtocol.Protocol;
+using ModelContextProtocol.Protocol;
 using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Server
+namespace ModelContextProtocol.Server
 {
 
     public sealed class McpServerToolCreateOptions

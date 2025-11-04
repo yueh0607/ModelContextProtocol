@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示服务器可能支持的功能。

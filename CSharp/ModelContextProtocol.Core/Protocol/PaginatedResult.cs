@@ -1,4 +1,4 @@
-﻿namespace MapleModelContextProtocol.Protocol
+﻿namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 为支持基于游标分页的结果负载提供一个基类。

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MapleModelContextProtocol.Protocol;
-using MapleModelContextProtocol.Server;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 using Newtonsoft.Json.Linq;
 
-namespace MapleModelContextProtocol.Server
+namespace ModelContextProtocol.Server
 {
     /// <summary>
     /// 简化的MCP工具基类，不依赖Microsoft.Extensions.AI
@@ -112,9 +112,9 @@ namespace MapleModelContextProtocol.Server
 // 使用示例
 // ============================================================
 
-namespace MapleModelContextProtocol.Examples
+namespace ModelContextProtocol.Examples
 {
-    using MapleModelContextProtocol.Server;
+    using ModelContextProtocol.Server;
 
     /// <summary>
     /// 示例：如何创建和使用简单工具
@@ -271,7 +271,7 @@ namespace MapleModelContextProtocol.Examples
 // 集成到McpServer的示例
 // ============================================================
 
-namespace MapleModelContextProtocol.Examples
+namespace ModelContextProtocol.Examples
 {
     /// <summary>
     /// 如何将简化工具集成到McpServer

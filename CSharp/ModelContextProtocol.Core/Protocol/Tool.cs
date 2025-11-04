@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using MapleModelContextProtocol.Server;
+using ModelContextProtocol.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示服务器能够调用的工具。

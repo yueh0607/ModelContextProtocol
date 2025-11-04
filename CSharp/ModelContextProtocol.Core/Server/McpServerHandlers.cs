@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Threading;
-using MapleModelContextProtocol.Protocol;
+using ModelContextProtocol.Protocol;
 
-namespace MapleModelContextProtocol.Server
+namespace ModelContextProtocol.Server
 {
     public delegate ValueTask<TResult> McpRequestHandler<TParams, TResult>(RequestContext<TParams> request, CancellationToken cancellationToken);
     public sealed class McpServerHandlers

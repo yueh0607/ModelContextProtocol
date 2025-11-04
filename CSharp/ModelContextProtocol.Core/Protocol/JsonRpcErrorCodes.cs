@@ -1,4 +1,4 @@
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 定义 JSON-RPC 2.0 规范中规定的标准错误代码。

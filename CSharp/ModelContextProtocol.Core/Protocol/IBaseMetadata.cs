@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>为具有名称（标识符）和标题（显示名称）属性的元数据提供基本接口。</summary>
     public interface IBaseMetadata

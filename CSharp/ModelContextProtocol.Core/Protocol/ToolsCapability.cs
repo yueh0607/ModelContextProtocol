@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示服务器的工具功能，用于列出客户端能够调用的工具。

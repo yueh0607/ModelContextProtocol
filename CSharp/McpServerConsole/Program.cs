@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MapleModelContextProtocol.Protocol;
-using MapleModelContextProtocol.Server;
-using MapleModelContextProtocol.Server.Transport;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
+using ModelContextProtocol.Server.Transport;
 
 namespace McpServerConsole
 {

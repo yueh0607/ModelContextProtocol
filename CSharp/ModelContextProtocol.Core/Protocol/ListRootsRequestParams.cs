@@ -1,4 +1,4 @@
-﻿namespace MapleModelContextProtocol.Protocol
+﻿namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示服务器发送 <see cref="RequestMethods.ResourcesTemplatesList"/> 请求时使用的参数，用于请求客户端可用的根列表。

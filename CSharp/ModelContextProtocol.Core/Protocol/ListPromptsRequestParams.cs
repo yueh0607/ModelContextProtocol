@@ -1,4 +1,4 @@
-﻿namespace MapleModelContextProtocol.Protocol
+﻿namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端使用 <see cref="RequestMethods.PromptsList"/> 请求服务器可用提示列表时所使用的参数。

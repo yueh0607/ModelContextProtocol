@@ -1,4 +1,4 @@
-﻿namespace MapleModelContextProtocol.Protocol
+﻿namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端使用<see cref="RequestMethods.ResourcesList"/>请求向服务器请求可用资源列表时使用的参数。

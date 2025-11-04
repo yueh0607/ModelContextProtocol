@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MapleModelContextProtocol.Protocol;
-using MapleModelContextProtocol.Server.Transport;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server.Transport;
 using Newtonsoft.Json.Linq;
 
-namespace MapleModelContextProtocol.Server
+namespace ModelContextProtocol.Server
 {
 
     public sealed class TransportBasedMcpServer : McpServer

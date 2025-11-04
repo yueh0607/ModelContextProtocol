@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端使用<see cref="RequestMethods.ResourcesRead"/>请求获取服务器提供的资源时使用的参数。

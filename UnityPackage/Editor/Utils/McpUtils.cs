@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using MapleModelContextProtocol.Protocol;
+using ModelContextProtocol.Protocol;
 
 namespace UnityAIStudio.McpServer.Tools
 {

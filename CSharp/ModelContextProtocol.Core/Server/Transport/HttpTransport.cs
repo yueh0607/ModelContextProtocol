@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MapleModelContextProtocol.Server.Transport
+namespace ModelContextProtocol.Server.Transport
 {
 
     public sealed class HttpTransport : IMcpTransport, IDisposable

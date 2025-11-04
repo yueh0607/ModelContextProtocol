@@ -1,7 +1,7 @@
 ﻿using System;
-using MapleModelContextProtocol.Protocol;
+using ModelContextProtocol.Protocol;
 
-namespace MapleModelContextProtocol.Client
+namespace ModelContextProtocol.Client
 {
 
     public sealed class McpClientOptions

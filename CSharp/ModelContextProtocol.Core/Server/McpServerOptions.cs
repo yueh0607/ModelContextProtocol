@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using MapleModelContextProtocol.Protocol;
+using ModelContextProtocol.Protocol;
 
-namespace MapleModelContextProtocol.Server
+namespace ModelContextProtocol.Server
 {
 
     public sealed class McpServerOptions

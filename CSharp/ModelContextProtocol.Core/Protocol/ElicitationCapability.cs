@@ -2,10 +2,10 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using MapleModelContextProtocol.Client;
+using ModelContextProtocol.Client;
 using Newtonsoft.Json;
 
-namespace MapleModelContextProtocol.Protocol
+namespace ModelContextProtocol.Protocol
 {
     /// <summary>
     /// 表示客户端在交互过程中提供服务器请求的附加信息的能力。

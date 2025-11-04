@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MapleModelContextProtocol.Server
+namespace ModelContextProtocol.Server
 {
 
     public interface IMcpServerPrimitive

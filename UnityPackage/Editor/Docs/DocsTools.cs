@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityAIStudio.McpServer.Tools.Attributes;
 using UnityAIStudio.McpServer.Tools;
-using MapleModelContextProtocol.Protocol;
+using ModelContextProtocol.Protocol;
 
 namespace UnityAIStudio.McpServer.Docs
 {

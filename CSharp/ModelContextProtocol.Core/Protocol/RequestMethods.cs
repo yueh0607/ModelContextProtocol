@@ -1,4 +1,4 @@
-﻿namespace MapleModelContextProtocol.Protocol
+﻿namespace ModelContextProtocol.Protocol
 {
 
     /// <summary>
