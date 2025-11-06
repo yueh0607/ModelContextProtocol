@@ -8,14 +8,14 @@ namespace ModelContextProtocol.Client
 {
     public class McpClientHandlers
     {
-        public IEnumerable<KeyValuePair<string, Func<JsonRpcNotification, CancellationToken, ValueTask>>> NotificationHandlers { get; set; }
+        public IEnumerable<KeyValuePair<string, Func<JsonRpcNotification, CancellationToken, Task>>> NotificationHandlers { get; set; }
 
-        public Func<ListRootsRequestParams, CancellationToken, ValueTask<ListRootsResult>> RootsHandler { get; set; }
-
-
-        public Func<ElicitRequestParams, CancellationToken, ValueTask<ElicitResult>> ElicitationHandler { get; set; }
+        public Func<ListRootsRequestParams, CancellationToken, Task<ListRootsResult>> RootsHandler { get; set; }
 
 
-        public Func<CreateMessageRequestParams, IProgress<ProgressNotificationValue>, CancellationToken, ValueTask<CreateMessageResult>> SamplingHandler { get; set; }
+        public Func<ElicitRequestParams, CancellationToken, Task<ElicitResult>> ElicitationHandler { get; set; }
+
+
+        public Func<CreateMessageRequestParams, IProgress<ProgressNotificationValue>, CancellationToken, Task<CreateMessageResult>> SamplingHandler { get; set; }
     }
 }

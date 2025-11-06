@@ -45,6 +45,6 @@ namespace ModelContextProtocol.Protocol
         [JsonIgnore]
         [Obsolete("Use McpClientOptions.Handlers.RootsHandler instead. This member will be removed in a subsequent release.")] // See: https://github.com/modelcontextprotocol/csharp-sdk/issues/774
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Func<ListRootsRequestParams, CancellationToken, ValueTask<ListRootsResult>> RootsHandler { get; set; }
+        public Func<ListRootsRequestParams, CancellationToken, Task<ListRootsResult>> RootsHandler { get; set; }
     }
 }

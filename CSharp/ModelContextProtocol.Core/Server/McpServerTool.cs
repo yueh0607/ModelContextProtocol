@@ -19,7 +19,7 @@ namespace ModelContextProtocol.Server
 
         public abstract IReadOnlyList<object> Metadata { get; }
 
-        public abstract ValueTask<CallToolResult> InvokeAsync(
+        public abstract Task<CallToolResult> InvokeAsync(
             RequestContext<CallToolRequestParams> request,
             CancellationToken cancellationToken = default);
 

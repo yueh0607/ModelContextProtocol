@@ -4,7 +4,7 @@ using ModelContextProtocol.Protocol;
 
 namespace ModelContextProtocol.Server
 {
-    public delegate ValueTask<TResult> McpRequestHandler<TParams, TResult>(RequestContext<TParams> request, CancellationToken cancellationToken);
+    public delegate Task<TResult> McpRequestHandler<TParams, TResult>(RequestContext<TParams> request, CancellationToken cancellationToken);
     public sealed class McpServerHandlers
     {
 

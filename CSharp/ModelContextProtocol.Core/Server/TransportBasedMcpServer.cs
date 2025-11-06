@@ -347,7 +347,7 @@ namespace ModelContextProtocol.Server
             var paramsObj = ParseRequestParams<ListResourcesRequestParams>(request);
             var context = new RequestContext<ListResourcesRequestParams> { Params = paramsObj };
 
-            // McpRequestHandler 返回 ValueTask，可以直接 await
+            // McpRequestHandler 返回 Task，可以直接 await
             return await _options.Handlers.ListResourcesHandler(context, cancellationToken);
         }
 

@@ -34,7 +34,7 @@ namespace ModelContextProtocol.Server
             return new MethodTool<TTarget>(name, description, target, method);
         }
 
-        public abstract ValueTask<CallToolResult> InvokeAsync(
+        public abstract Task<CallToolResult> InvokeAsync(
             RequestContext<CallToolRequestParams> request,
             CancellationToken cancellationToken);
 
@@ -59,7 +59,7 @@ namespace ModelContextProtocol.Server
             public override Tool ProtocolTool => _tool;
             public override IReadOnlyList<object> Metadata { get; } = Array.Empty<object>();
 
-            public override async ValueTask<CallToolResult> InvokeAsync(
+            public override async Task<CallToolResult> InvokeAsync(
                 RequestContext<CallToolRequestParams> request,
                 CancellationToken cancellationToken)
             {
@@ -94,7 +94,7 @@ namespace ModelContextProtocol.Server
             public override Tool ProtocolTool => _tool;
             public override IReadOnlyList<object> Metadata { get; } = Array.Empty<object>();
 
-            public override async ValueTask<CallToolResult> InvokeAsync(
+            public override async Task<CallToolResult> InvokeAsync(
                 RequestContext<CallToolRequestParams> request,
                 CancellationToken cancellationToken)
             {

@@ -45,6 +45,6 @@ namespace ModelContextProtocol.Protocol
         [JsonIgnore]
         [Obsolete("Use McpClientOptions.Handlers.SamplingHandler instead. This member will be removed in a subsequent release.")] // See: https://github.com/modelcontextprotocol/csharp-sdk/issues/774
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Func<CreateMessageRequestParams, IProgress<ProgressNotificationValue>, CancellationToken, ValueTask<CreateMessageResult>> SamplingHandler { get; set; }
+        public Func<CreateMessageRequestParams, IProgress<ProgressNotificationValue>, CancellationToken, Task<CreateMessageResult>> SamplingHandler { get; set; }
     }
 }

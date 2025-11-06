@@ -40,6 +40,6 @@ namespace ModelContextProtocol.Protocol
         [JsonIgnore]
         [Obsolete("Use McpClientOptions.Handlers.ElicitationHandler instead. This member will be removed in a subsequent release.")] // See: https://github.com/modelcontextprotocol/csharp-sdk/issues/774
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Func<ElicitRequestParams, CancellationToken, ValueTask<ElicitResult>> ElicitationHandler { get; set; }
+        public Func<ElicitRequestParams, CancellationToken, Task<ElicitResult>> ElicitationHandler { get; set; }
     }
 }
