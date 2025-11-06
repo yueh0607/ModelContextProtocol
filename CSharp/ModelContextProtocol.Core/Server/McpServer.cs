@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using ModelContextProtocol.Protocol;
-
 namespace ModelContextProtocol.Server
 {
     public abstract partial class McpServer

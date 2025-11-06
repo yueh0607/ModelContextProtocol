@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using ModelContextProtocol.Json;
 
 namespace ModelContextProtocol.Protocol
 {
@@ -18,7 +18,7 @@ namespace ModelContextProtocol.Protocol
     public class PromptArgument : IBaseMetadata
     {
         /// <inheritdoc />
-        [JsonProperty("name", Required = Newtonsoft.Json.Required.Always)]
+        [JsonProperty("name", Required = ModelContextProtocol.Json.Required.Always)]
         public string Name { get; set; }
 
         /// <inheritdoc />

@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ModelContextProtocol.Json.Linq;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server.Transport;
-using Newtonsoft.Json.Linq;
-
 namespace ModelContextProtocol.Server
 {
 
@@ -372,7 +371,7 @@ namespace ModelContextProtocol.Server
             }
 
             // 将 JToken 转换为强类型参数
-            return request.Params.ToObject<TParams>(Newtonsoft.Json.JsonSerializer.Create(McpJsonUtilities.DefaultSettings));
+            return request.Params.ToObject<TParams>(ModelContextProtocol.Json.JsonSerializer.Create(McpJsonUtilities.DefaultSettings));
         }
 
         private async Task SendMessageAsync(JsonRpcMessage message, CancellationToken cancellationToken)

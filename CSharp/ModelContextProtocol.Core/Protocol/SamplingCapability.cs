@@ -3,8 +3,8 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ModelContextProtocol.Client;
-using Newtonsoft.Json;
 
+using ModelContextProtocol.Json;
 namespace ModelContextProtocol.Protocol
 {
     /// <summary>

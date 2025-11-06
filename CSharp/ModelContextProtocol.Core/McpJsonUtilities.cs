@@ -1,8 +1,7 @@
 ﻿using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-
+using ModelContextProtocol.Json;
+using ModelContextProtocol.Json.Converters;
+using ModelContextProtocol.Json.Linq;
 namespace ModelContextProtocol
 {
 

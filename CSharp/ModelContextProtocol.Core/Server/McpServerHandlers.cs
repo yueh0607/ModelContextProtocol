@@ -1,7 +1,6 @@
-﻿using System.Threading.Tasks;
-using System.Threading;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using ModelContextProtocol.Protocol;
-
 namespace ModelContextProtocol.Server
 {
     public delegate Task<TResult> McpRequestHandler<TParams, TResult>(RequestContext<TParams> request, CancellationToken cancellationToken);

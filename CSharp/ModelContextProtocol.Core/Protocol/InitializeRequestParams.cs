@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using ModelContextProtocol.Json;
 
 namespace ModelContextProtocol.Protocol
 {

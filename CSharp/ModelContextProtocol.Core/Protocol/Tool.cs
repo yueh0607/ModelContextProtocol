@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using ModelContextProtocol.Json;
+using ModelContextProtocol.Json.Linq;
 using ModelContextProtocol.Server;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
 namespace ModelContextProtocol.Protocol
 {
     /// <summary>

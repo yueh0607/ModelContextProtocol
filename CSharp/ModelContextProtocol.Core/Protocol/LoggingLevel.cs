@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
+using ModelContextProtocol.Json;
+using ModelContextProtocol.Json.Converters;
 namespace ModelContextProtocol.Protocol
 {
     /// <summary>

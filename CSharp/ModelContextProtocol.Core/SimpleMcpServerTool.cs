@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ModelContextProtocol.Json.Linq;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using Newtonsoft.Json.Linq;
 
 namespace ModelContextProtocol.Server
 {
     /// <summary>
     /// 简化的MCP工具基类，不依赖Microsoft.Extensions.AI
-    /// 适用于 .NET Standard 2.0 + Newtonsoft.Json
+    /// 适用于 .NET Standard 2.0 + ModelContextProtocol.Json
     /// </summary>
     public abstract class SimpleMcpServerTool : IMcpServerPrimitive
     {

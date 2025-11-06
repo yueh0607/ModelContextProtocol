@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
+using ModelContextProtocol.Json;
+using ModelContextProtocol.Json.Linq;
 namespace ModelContextProtocol.Protocol
 {
     /// <summary>

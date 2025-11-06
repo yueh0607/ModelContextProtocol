@@ -234,7 +234,7 @@ namespace McpServerConsole
                         timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                     };
 
-                    var json = Newtonsoft.Json.JsonConvert.SerializeObject(info, Newtonsoft.Json.Formatting.Indented);
+                    var json = ModelContextProtocol.Json.JsonConvert.SerializeObject(info, ModelContextProtocol.Json.Formatting.Indented);
 
                     return new CallToolResult
                     {

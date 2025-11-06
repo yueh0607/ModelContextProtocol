@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
 
+using ModelContextProtocol.Json;
 namespace ModelContextProtocol.Protocol
 {
     /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
+using ModelContextProtocol.Json;
+using ModelContextProtocol.Json.Linq;
 namespace ModelContextProtocol.Protocol
 {
     /// <summary>
@@ -33,6 +32,6 @@ namespace ModelContextProtocol.Protocol
         /// </para>
         /// </remarks>
         [JsonProperty("arguments")]
-        public Dictionary<string, JToken> Arguments { get; set; } // Newtonsoft.Json无法序列化 IReadOnlyDictionary
+        public Dictionary<string, JToken> Arguments { get; set; } // ModelContextProtocol.Json无法序列化 IReadOnlyDictionary
     }
 }
