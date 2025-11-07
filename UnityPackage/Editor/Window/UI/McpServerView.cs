@@ -1,10 +1,10 @@
-using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using UnityAIStudio.McpServer.Models;
 using UnityAIStudio.McpServer.Services;
+using UnityEditor;
+using UnityEngine;
 
 namespace UnityAIStudio.McpServer.UI
 {
@@ -159,7 +159,7 @@ namespace UnityAIStudio.McpServer.UI
                     {
                         service.Config.port = parsedPort;
                         service.Config.Save(); // 立即持久化，避免编译或重载丢失
-                    } 
+                    }
                 }
 
                 // Port availability indicator

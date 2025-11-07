@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace UnityAIStudio.McpServer.Models
 {
@@ -51,10 +50,10 @@ namespace UnityAIStudio.McpServer.Models
         {
             return new ServerConfig
             {
-                port = this.port,
-                version = this.version,
-                autoStart = this.autoStart,
-                maxConnections = this.maxConnections
+                port = port,
+                version = version,
+                autoStart = autoStart,
+                maxConnections = maxConnections
             };
         }
     }

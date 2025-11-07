@@ -1,6 +1,6 @@
-using UnityEngine;
-using UnityEditor;
 using UnityAIStudio.McpServer.Services;
+using UnityEditor;
+using UnityEngine;
 
 namespace UnityAIStudio.McpServer.UI
 {

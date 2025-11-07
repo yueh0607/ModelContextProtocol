@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace UnityAIStudio.McpServer.UI
 {
@@ -47,13 +47,13 @@ namespace UnityAIStudio.McpServer.UI
         public static void Initialize()
         {
             if (initialized) return;
-			// 防御：在某些生命周期阶段（如 OnEnable、域重载早期），Editor 内置皮肤或样式尚未就绪
-			var inspectorSkin = EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector);
-			if (inspectorSkin == null || EditorStyles.boldLabel == null || EditorStyles.label == null || EditorStyles.helpBox == null || EditorStyles.foldout == null)
-			{
-				// 延迟到后续的 OnGUI 再初始化
-				return;
-			}
+            // 防御：在某些生命周期阶段（如 OnEnable、域重载早期），Editor 内置皮肤或样式尚未就绪
+            var inspectorSkin = EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector);
+            if (inspectorSkin == null || EditorStyles.boldLabel == null || EditorStyles.label == null || EditorStyles.helpBox == null || EditorStyles.foldout == null)
+            {
+                // 延迟到后续的 OnGUI 再初始化
+                return;
+            }
 
             InitializeHeaderStyles();
             InitializeCardStyles();

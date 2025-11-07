@@ -4,11 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ModelContextProtocol.Json.Linq;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using ModelContextProtocol.Json.Linq;
-using UnityEngine;
 using UnityAIStudio.McpServer.Tools.Attributes;
+using UnityEngine;
 
 namespace UnityAIStudio.McpServer.Tools
 {
@@ -32,7 +32,7 @@ namespace UnityAIStudio.McpServer.Tools
 
             try
             {
-                var userAssembly = GetAssemblyByName(assemblies,"McpServer.ProjectTools");
+                var userAssembly = GetAssemblyByName(assemblies, "McpServer.ProjectTools");
                 if (userAssembly != null)
                 {
                     var userTools = DiscoverTools(userAssembly);
@@ -54,7 +54,7 @@ namespace UnityAIStudio.McpServer.Tools
         {
             return assemblies
                 .FirstOrDefault(a => !a.IsDynamic
-                    &&a.GetName().Name == assemblyName);
+                    && a.GetName().Name == assemblyName);
         }
 
 

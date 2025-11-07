@@ -18,7 +18,7 @@ namespace UnityAIStudio.McpServer.Models
             this.name = name;
             this.description = description;
             this.category = category;
-            this.enabled = true;
+            enabled = true;
         }
 
         public override string ToString()

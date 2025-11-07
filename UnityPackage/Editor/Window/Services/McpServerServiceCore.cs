@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -8,10 +7,10 @@ using System.Threading.Tasks;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using ModelContextProtocol.Server.Transport;
-using UnityEngine;
-using UnityEditor;
 using UnityAIStudio.McpServer.Models;
 using UnityAIStudio.McpServer.Tools;
+using UnityEditor;
+using UnityEngine;
 
 namespace UnityAIStudio.McpServer.Services
 {
