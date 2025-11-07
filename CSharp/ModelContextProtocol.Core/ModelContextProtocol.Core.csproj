@@ -7,4 +7,16 @@
     <ItemGroup>
         <ProjectReference Include="..\ModelContextProtocol.Json\ModelContextProtocol.Json.csproj" />
     </ItemGroup>
+
+    <!-- Post-build event to copy DLL and PDB to Unity Package -->
+    <Target Name="CopyToUnityPackage" AfterTargets="Build">
+        <PropertyGroup>
+            <UnityPluginsPath>$(MSBuildProjectDirectory)\..\..\UnityPackage\Editor\Plugins</UnityPluginsPath>
+        </PropertyGroup>
+        <Message Importance="high" Text="Copying $(TargetFileName) to Unity Package..." />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(UnityPluginsPath)" />
+        <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(UnityPluginsPath)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+        <Message Importance="high" Text="Successfully copied to $(UnityPluginsPath)" />
+    </Target>
+
 </Project>

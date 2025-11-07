@@ -9,7 +9,7 @@ namespace UnityAIStudio.McpServer.Services
     /// 持久化的 MCP Server 管理器，在编译和窗口关闭时保持服务器运行
     /// </summary> 
     [InitializeOnLoad] 
-    public static class McpServerManager
+    public static class McpServerManager 
     {
         private static IMcpServerService instance;
         private static bool isInitialized = false;

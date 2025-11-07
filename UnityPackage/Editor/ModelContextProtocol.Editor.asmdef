@@ -1,8 +1,7 @@
 {
     "name": "ModelContextProtocol.Editor",
-    "references": [
-        "ModelContextProtocol.Runtime"
-    ],
+    "rootNamespace": "",
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],
@@ -11,7 +10,7 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "ModelContextProtocol.Core.dll",
-        "Newtonsoft.Json.dll"
+        "ModelContextProtocol.Json.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using Newtonsoft.Json.Linq;
+using ModelContextProtocol.Json.Linq;
 using UnityEngine;
 using UnityAIStudio.McpServer.Tools.Attributes;
 

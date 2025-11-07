@@ -4,8 +4,8 @@ using UnityAIStudio.McpServer.Services;
 using UnityAIStudio.McpServer.UI;
 using System.Text;
 using System.IO;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+using ModelContextProtocol.Json;
+using ModelContextProtocol.Json.Linq;
 
 namespace UnityAIStudio.McpServer.Docs
 {
