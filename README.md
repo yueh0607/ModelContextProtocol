@@ -1,6 +1,11 @@
 # ModelContextProtocolCSharp
 基于.NET Standard 2.0 的MCP Server实现，用于嵌入unity和各种允许CSharp开发插件的程序内。
 
+相比Python + C# 实现的优势
+- 推广容易 ： 导入项目无理解负担，参与共建意愿强。
+- 容易配置： 无需Python环境，减少配置步骤。
+- 写工具无需同时加Python 和 C# ，容易开发。
+
 
 ## 开始
 打开MCP工具设置，点击Start Server，开启MCP服务器
