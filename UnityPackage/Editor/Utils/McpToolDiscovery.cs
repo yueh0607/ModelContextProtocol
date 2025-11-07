@@ -317,6 +317,10 @@ namespace UnityAIStudio.McpServer.Tools
                             try
                             {
                                 paramValues[i] = token.ToObject(param.ParameterType);
+
+                                // 应用参数处理器链
+                                paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
+
                                 continue;
                             }
                             catch (Exception ex)
@@ -360,6 +364,9 @@ namespace UnityAIStudio.McpServer.Tools
                             try
                             {
                                 paramValues[i] = obj[paramName].ToObject(param.ParameterType);
+
+                                // 应用参数处理器链
+                                paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
                             }
                             catch (Exception ex)
                             {
@@ -451,6 +458,61 @@ namespace UnityAIStudio.McpServer.Tools
                 },
                 IsError = true
             };
+        }
+
+        /// <summary>
+        /// 应用参数处理器链
+        /// </summary>
+        /// <param name="param">参数信息</param>
+        /// <param name="value">原始参数值</param>
+        /// <returns>处理后的参数值</returns>
+        private static object ApplyParameterProcessors(ParameterInfo param, object value)
+        {
+            if (value == null || param == null)
+            {
+                return value;
+            }
+
+            try
+            {
+                // 获取参数上的所有处理器特性
+                var processors = param.GetCustomAttributes<McpParameterProcessorAttribute>()
+                    .OrderBy(p => p.Order)
+                    .ToList();
+
+                if (processors.Count == 0)
+                {
+                    return value;
+                }
+
+                // 依次应用每个处理器
+                object currentValue = value;
+                foreach (var processor in processors)
+                {
+                    try
+                    {
+                        object processedValue = processor.Process(currentValue, param.ParameterType);
+
+                        // 如果处理器返回 null，表示处理失败或不修改，继续使用当前值
+                        if (processedValue != null)
+                        {
+                            currentValue = processedValue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // 处理器执行失败，记录日志但继续使用当前值
+                        Debug.LogWarning($"[MCP Tool] Parameter processor {processor.GetType().Name} failed for parameter '{param.Name}': {ex.Message}");
+                    }
+                }
+
+                return currentValue;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[MCP Tool] Error applying parameter processors for '{param.Name}': {ex}");
+                return value; // 出错时返回原始值
+            }
         }
     }
 }
