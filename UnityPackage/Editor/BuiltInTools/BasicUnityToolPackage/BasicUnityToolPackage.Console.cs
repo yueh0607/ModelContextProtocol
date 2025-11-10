@@ -28,8 +28,10 @@ namespace UnityAIStudio.McpServer.Tools
         )]
         public async Task<CallToolResult> GetConsoleLogs(
             [McpParameter("Log types to retrieve: 'log', 'warning', 'error', 'all' (comma-separated, default: 'all')")]
+            [OptionsProcessor("log", "warning", "error", AllValue = "all", IgnoreCase = true)]
             string types = "all",
             [McpParameter("Number of log entries to retrieve (default: 20)")]
+            [ClampProcessor(Min = 1, Max = 1000)]
             int count = 20,
             [McpParameter("Filter text - only logs containing this text will be returned")]
             string filterText = null,
@@ -47,14 +49,10 @@ namespace UnityAIStudio.McpServer.Tools
                             "Console tool failed to initialize due to reflection errors. Cannot access console logs.");
                     }
 
+                    // types 参数已经通过 OptionsProcessor 处理，可以直接使用
                     var typeList = types.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(t => t.Trim().ToLower())
                         .ToList();
-
-                    if (typeList.Contains("all"))
-                    {
-                        typeList = new List<string> { "log", "warning", "error" };
-                    }
 
                     return GetConsoleEntriesReadable(typeList, count, filterText, includeStacktrace);
                 }
