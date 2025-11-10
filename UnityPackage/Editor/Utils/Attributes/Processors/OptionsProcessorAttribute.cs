@@ -92,10 +92,12 @@ namespace UnityAIStudio.McpServer.Tools
                     }
                 }
 
-                // 如果没有任何有效选项，返回原值
+                // 如果没有任何有效选项，抛出异常
                 if (validatedOptions.Count == 0)
                 {
-                    return value;
+                    string validOptionsStr = string.Join(", ", ValidOptions);
+                    throw new ArgumentException(
+                        $"No valid options found in '{inputValue}'. Valid options are: {validOptionsStr}");
                 }
 
                 // 返回验证后的选项（去重）
@@ -110,8 +112,10 @@ namespace UnityAIStudio.McpServer.Tools
                     return matchedOption;
                 }
 
-                // 无效选项，返回原值
-                return value;
+                // 无效选项，抛出异常
+                string validOptionsStr = string.Join(", ", ValidOptions);
+                throw new ArgumentException(
+                    $"Invalid option '{inputValue.Trim()}'. Valid options are: {validOptionsStr}");
             }
         }
 

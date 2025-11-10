@@ -30,8 +30,8 @@ namespace UnityAIStudio.McpServer.Tools
             [McpParameter("Log types to retrieve: 'log', 'warning', 'error', 'all' (comma-separated, default: 'all')")]
             [OptionsProcessor("log", "warning", "error", AllValue = "all", IgnoreCase = true)]
             string types = "all",
-            [McpParameter("Number of log entries to retrieve (default: 20)")]
-            [ClampProcessor(Min = 1, Max = 1000)]
+            [McpParameter("Number of log entries to retrieve (default: 20, range: 1-1000)")]
+            [RangeProcessor(Min = 1, Max = 1000)]
             int count = 20,
             [McpParameter("Filter text - only logs containing this text will be returned")]
             string filterText = null,

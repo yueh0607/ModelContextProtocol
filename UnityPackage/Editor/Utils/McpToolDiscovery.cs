@@ -508,9 +508,14 @@ namespace UnityAIStudio.McpServer.Tools
                             currentValue = processedValue;
                         }
                     }
+                    catch (ArgumentException)
+                    {
+                        // ArgumentException 表示参数验证失败，应该向上传播
+                        throw;
+                    }
                     catch (Exception ex)
                     {
-                        // 处理器执行失败，记录日志但继续使用当前值
+                        // 其他异常：处理器执行失败，记录日志但继续使用当前值
                         Debug.LogWarning($"[MCP Tool] Parameter processor {processor.GetType().Name} failed for parameter '{param.Name}': {ex.Message}");
                     }
                 }
