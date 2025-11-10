@@ -70,7 +70,7 @@ namespace UnityAIStudio.McpServer.Docs
 
             EditorGUILayout.Space(6);
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("✍️ 写入 C\\\\Users\\\\zhenpengyue\\\\.cursor\\\\mcp.json", GUILayout.Width(290), GUILayout.Height(24)))
+            if (GUILayout.Button("✍️ 写入 " + CursorConfigPath, GUILayout.Width(290), GUILayout.Height(24)))
             {
                 WriteCursorConfig(url);
             }
@@ -119,7 +119,7 @@ namespace UnityAIStudio.McpServer.Docs
             EditorGUILayout.EndVertical();
         }
 
-        private static readonly string CursorConfigPath = @"C:\\Users\\zhenpengyue\\.cursor\\mcp.json";
+        private static readonly string CursorConfigPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".cursor", "mcp.json");
 
         private void WriteCursorConfig(string url)
         {
