@@ -6,13 +6,13 @@ using ModelContextProtocol.Protocol;
 using UnityAIStudio.McpServer.Tools.Attributes;
 using UnityEditor;
 
-namespace UnityAIStudio.McpServer.Tools 
+namespace UnityAIStudio.McpServer.Tools
 {
     /// <summary>
-    /// 执行Unity编辑器菜单项
+    /// BasicUnityToolPackage - Menu部分
+    /// 提供Unity编辑器菜单执行功能
     /// </summary>
-    [McpToolClass(Category = "Basic Unity Tools", Description = "Basic Unity Tools")]
-    public class BasicUnityToolPackage
+    public partial class BasicUnityToolPackage
     {
         // 黑名单 - 防止执行破坏性菜单项
         private static readonly HashSet<string> _menuPathBlacklist = new HashSet<string>(
