@@ -334,10 +334,14 @@ namespace UnityAIStudio.McpServer.Tools
                         if (paramAttr?.DefaultValue != null)
                         {
                             paramValues[i] = paramAttr.DefaultValue;
+                            // 对默认值也应用参数处理器链
+                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
                         }
                         else if (param.HasDefaultValue)
                         {
                             paramValues[i] = param.DefaultValue;
+                            // 对默认值也应用参数处理器链
+                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
                         }
                         else
                         {
@@ -377,10 +381,14 @@ namespace UnityAIStudio.McpServer.Tools
                         else if (paramAttr?.DefaultValue != null)
                         {
                             paramValues[i] = paramAttr.DefaultValue;
+                            // 对默认值也应用参数处理器链
+                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
                         }
                         else if (param.HasDefaultValue)
                         {
                             paramValues[i] = param.DefaultValue;
+                            // 对默认值也应用参数处理器链
+                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
                         }
                         else
                         {
