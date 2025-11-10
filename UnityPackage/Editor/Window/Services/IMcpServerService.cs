@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityAIStudio.McpServer.Models;
+using UnityAIStudio.McpServer.Editor.Window.Models;
 
 namespace UnityAIStudio.McpServer.Services
 {
@@ -14,6 +15,7 @@ namespace UnityAIStudio.McpServer.Services
         event Action<ConnectionStatus> OnConnectionStatusChanged;
         event Action<string> OnLogMessage;
         event Action<List<McpTool>> OnToolsListUpdated;
+        event Action<List<McpToolPackage>> OnToolPackagesListUpdated;
 
         // State
         ServerState State { get; }
@@ -24,10 +26,15 @@ namespace UnityAIStudio.McpServer.Services
         void Stop();
         void Restart();
 
-        // Tools management
+        // Tools management (legacy - for individual tools)
         List<McpTool> GetAvailableTools();
         void RefreshTools();
         void SetToolEnabled(string toolName, bool enabled);
+
+        // Tool Packages management (new - for package-level control)
+        List<McpToolPackage> GetAvailableToolPackages();
+        void RefreshToolPackages();
+        void SetToolPackageEnabled(string className, bool enabled);
 
         // Network utilities
         bool IsPortAvailable(int port);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -8,6 +9,7 @@ using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using ModelContextProtocol.Server.Transport;
 using UnityAIStudio.McpServer.Models;
+using UnityAIStudio.McpServer.Editor.Window.Models;
 using UnityAIStudio.McpServer.Tools;
 using UnityEditor;
 using UnityEngine;
@@ -24,6 +26,7 @@ namespace UnityAIStudio.McpServer.Services
         public event Action<ConnectionStatus> OnConnectionStatusChanged;
         public event Action<string> OnLogMessage;
         public event Action<List<McpTool>> OnToolsListUpdated;
+        public event Action<List<McpToolPackage>> OnToolPackagesListUpdated;
 
         // State
         public ServerState State { get; private set; }
@@ -38,6 +41,7 @@ namespace UnityAIStudio.McpServer.Services
         // Tools
         private List<McpTool> availableTools;
         private List<SimpleMcpServerTool> coreTools;
+        private List<McpToolPackage> availableToolPackages;
 
         // Update tracking
         private float lastUpdateTime;
@@ -191,6 +195,7 @@ namespace UnityAIStudio.McpServer.Services
         {
             // 初始为空；在注册工具后由 coreTools 动态构建
             availableTools = new List<McpTool>();
+            availableToolPackages = new List<McpToolPackage>();
         }
 
         private McpServerOptions CreateServerOptions()
@@ -211,8 +216,16 @@ namespace UnityAIStudio.McpServer.Services
 
         private void RegisterTools(McpServerOptions options)
         {
-            // 使用反射自动发现工具（内置 + 用户自定义）
-            coreTools = McpToolDiscovery.DiscoverAllTools();
+            // 首先发现所有ToolPackage并加载启用状态
+            availableToolPackages = McpToolDiscovery.DiscoverAllToolPackages();
+
+            // 获取启用的ToolPackage类名集合
+            var enabledToolPackages = new HashSet<string>(
+                availableToolPackages.Where(p => p.enabled).Select(p => p.className)
+            );
+
+            // 只注册启用的ToolPackage中的工具
+            coreTools = McpToolDiscovery.DiscoverAllToolsWithFilter(enabledToolPackages);
 
             // 注册到服务器选项
             options.ToolCollection = coreTools;
@@ -220,8 +233,9 @@ namespace UnityAIStudio.McpServer.Services
             // 同步构建 UI 显示用的工具列表（名称 + 描述）
             RebuildAvailableToolsFromCore();
             OnToolsListUpdated?.Invoke(availableTools);
+            OnToolPackagesListUpdated?.Invoke(availableToolPackages);
 
-            Log($"Registered {coreTools.Count} MCP tools (built-in + user-defined)");
+            Log($"Registered {coreTools.Count} MCP tools from {enabledToolPackages.Count} enabled packages");
         }
 
         public List<McpTool> GetAvailableTools()
@@ -245,6 +259,38 @@ namespace UnityAIStudio.McpServer.Services
             {
                 tool.enabled = enabled;
                 Log($"Tool '{toolName}' {(enabled ? "enabled" : "disabled")}");
+            }
+        }
+
+        public List<McpToolPackage> GetAvailableToolPackages()
+        {
+            return new List<McpToolPackage>(availableToolPackages ?? new List<McpToolPackage>());
+        }
+
+        public void RefreshToolPackages()
+        {
+            Log("Refreshing tool packages list...");
+            // 重新发现ToolPackage
+            availableToolPackages = McpToolDiscovery.DiscoverAllToolPackages();
+            OnToolPackagesListUpdated?.Invoke(availableToolPackages);
+            Log($"Found {availableToolPackages.Count} available tool packages");
+        }
+
+        public void SetToolPackageEnabled(string className, bool enabled)
+        {
+            var toolPackage = availableToolPackages?.Find(p => p.className == className);
+            if (toolPackage != null)
+            {
+                toolPackage.enabled = enabled;
+                // 保存到EditorPrefs
+                UnityEditor.EditorPrefs.SetBool(toolPackage.GetPrefsKey(), enabled);
+
+                string action = enabled ? "enabled" : "disabled";
+                Log($"Tool package '{toolPackage.displayName}' ({toolPackage.category}) {action}");
+                Log($"⚠️ Restart the server to apply changes. {toolPackage.toolCount} tools will be {action}.");
+
+                // 通知UI更新
+                OnToolPackagesListUpdated?.Invoke(availableToolPackages);
             }
         }
 
@@ -333,10 +379,7 @@ namespace UnityAIStudio.McpServer.Services
                     var meta = t.ProtocolTool;
                     var name = meta?.Name ?? "(Unnamed Tool)";
                     var desc = meta?.Description ?? string.Empty;
-                    var cat = meta?.Meta != null && meta.Meta["category"] != null
-                        ? meta.Meta["category"].ToString()
-                        : "General";
-                    newList.Add(new McpTool(name, desc, cat));
+                    newList.Add(new McpTool(name, desc));
                 }
             }
             availableTools = newList;

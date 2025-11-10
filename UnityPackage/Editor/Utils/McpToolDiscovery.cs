@@ -8,6 +8,7 @@ using ModelContextProtocol.Json.Linq;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using UnityAIStudio.McpServer.Tools.Attributes;
+using UnityAIStudio.McpServer.Editor.Window.Models;
 using UnityEngine;
 
 namespace UnityAIStudio.McpServer.Tools
@@ -513,6 +514,186 @@ namespace UnityAIStudio.McpServer.Tools
                 Debug.LogError($"[MCP Tool] Error applying parameter processors for '{param.Name}': {ex}");
                 return value; // 出错时返回原始值
             }
+        }
+
+        /// <summary>
+        /// 从所有相关程序集中发现ToolPackage信息（内置+用户自定义）
+        /// </summary>
+        public static List<McpToolPackage> DiscoverAllToolPackages()
+        {
+            var toolPackages = new List<McpToolPackage>();
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            var builtInToolPackages = DiscoverToolPackages(GetAssemblyByName(assemblies, "McpServer.BuiltInTools"));
+            toolPackages.AddRange(builtInToolPackages);
+            Debug.Log($"[MCP Discovery] Discovered {builtInToolPackages.Count} built-in tool packages");
+
+            try
+            {
+                var userAssembly = GetAssemblyByName(assemblies, "McpServer.ProjectTools");
+                if (userAssembly != null)
+                {
+                    var userToolPackages = DiscoverToolPackages(userAssembly);
+                    toolPackages.AddRange(userToolPackages);
+                    Debug.Log($"[MCP Discovery] Discovered {userToolPackages.Count} user-defined tool packages");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[MCP Discovery] Failed to discover user tool packages: {ex.Message}");
+            }
+
+            Debug.Log($"[MCP Discovery] Total tool packages discovered: {toolPackages.Count}");
+            return toolPackages;
+        }
+
+        /// <summary>
+        /// 从指定程序集中发现所有ToolPackage信息
+        /// </summary>
+        public static List<McpToolPackage> DiscoverToolPackages(Assembly assembly = null)
+        {
+            if (assembly == null)
+            {
+                assembly = Assembly.GetExecutingAssembly();
+            }
+
+            var toolPackageList = new List<McpToolPackage>();
+
+            // 查找所有带有McpToolClass特性的类
+            var toolClasses = assembly.GetTypes()
+                .Where(t => t.GetCustomAttribute<McpToolClassAttribute>() != null
+                    && !t.IsAbstract
+                    && t.IsClass
+                )
+                .ToList();
+
+            foreach (var toolClass in toolClasses)
+            {
+                var classAttr = toolClass.GetCustomAttribute<McpToolClassAttribute>();
+
+                // 查找该类中所有带有McpTool特性的方法
+                var methods = toolClass.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
+                    .Where(m => m.GetCustomAttribute<McpToolAttribute>() != null)
+                    .ToList();
+
+                // 获取工具名称列表
+                var toolNames = methods.Select(m =>
+                {
+                    var toolAttr = m.GetCustomAttribute<McpToolAttribute>();
+                    return string.IsNullOrEmpty(toolAttr.Name) ? m.Name : toolAttr.Name;
+                }).ToList();
+
+                // 创建McpToolPackage对象
+                var className = toolClass.FullName ?? toolClass.Name;
+                var displayName = toolClass.Name;
+                var category = classAttr?.Category ?? "General";
+                var description = classAttr?.Description ?? $"Tools from {displayName}";
+
+                var mcpToolPackage = new McpToolPackage(className, displayName, category, description, methods.Count);
+                mcpToolPackage.toolNames = toolNames;
+
+                // 从EditorPrefs加载启用/禁用状态
+                mcpToolPackage.enabled = UnityEditor.EditorPrefs.GetBool(mcpToolPackage.GetPrefsKey(), true);
+
+                toolPackageList.Add(mcpToolPackage);
+            }
+
+            return toolPackageList;
+        }
+
+        /// <summary>
+        /// 根据启用的ToolPackage过滤工具
+        /// </summary>
+        public static List<SimpleMcpServerTool> DiscoverAllToolsWithFilter(HashSet<string> enabledToolPackages)
+        {
+            var tools = new List<SimpleMcpServerTool>();
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            var builtInTools = DiscoverToolsWithFilter(GetAssemblyByName(assemblies, "McpServer.BuiltInTools"), enabledToolPackages);
+            tools.AddRange(builtInTools);
+            Debug.Log($"[MCP Discovery] Discovered {builtInTools.Count} enabled built-in tools");
+
+            try
+            {
+                var userAssembly = GetAssemblyByName(assemblies, "McpServer.ProjectTools");
+                if (userAssembly != null)
+                {
+                    var userTools = DiscoverToolsWithFilter(userAssembly, enabledToolPackages);
+                    tools.AddRange(userTools);
+                    Debug.Log($"[MCP Discovery] Discovered {userTools.Count} enabled user-defined tools");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[MCP Discovery] Failed to discover user tools: {ex.Message}");
+            }
+
+            Debug.Log($"[MCP Discovery] Total enabled tools discovered: {tools.Count}");
+            return tools;
+        }
+
+        /// <summary>
+        /// 从指定程序集中发现所有启用的工具
+        /// </summary>
+        private static List<SimpleMcpServerTool> DiscoverToolsWithFilter(Assembly assembly, HashSet<string> enabledToolPackages)
+        {
+            if (assembly == null)
+            {
+                return new List<SimpleMcpServerTool>();
+            }
+
+            var tools = new List<SimpleMcpServerTool>();
+
+            // 查找所有带有McpToolClass特性的类
+            var toolClasses = assembly.GetTypes()
+                .Where(t => t.GetCustomAttribute<McpToolClassAttribute>() != null
+                    && !t.IsAbstract
+                    && t.IsClass
+                )
+                .ToList();
+
+            foreach (var toolClass in toolClasses)
+            {
+                var className = toolClass.FullName ?? toolClass.Name;
+
+                // 检查这个ToolPackage是否被启用
+                if (!enabledToolPackages.Contains(className))
+                {
+                    Debug.Log($"[MCP Discovery] Skipping disabled tool package: {className}");
+                    continue;
+                }
+
+                var classAttr = toolClass.GetCustomAttribute<McpToolClassAttribute>();
+                Debug.Log($"[MCP Discovery] Processing enabled class: {toolClass.Name}, Category: {classAttr?.Category}");
+
+                // 查找该类中所有带有McpTool特性的方法
+                var methods = toolClass.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
+                    .Where(m => m.GetCustomAttribute<McpToolAttribute>() != null)
+                    .ToList();
+
+                Debug.Log($"[MCP Discovery]   Found {methods.Count} tool methods in {toolClass.Name}");
+
+                foreach (var method in methods)
+                {
+                    try
+                    {
+                        var tool = CreateToolFromMethod(toolClass, method, classAttr);
+                        if (tool != null)
+                        {
+                            tools.Add(tool);
+                            Debug.Log($"[MCP Discovery]   ✓ Registered tool: {tool.ProtocolTool.Name}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"[MCP Discovery] Failed to create tool from {toolClass.Name}.{method.Name}: {ex.Message}");
+                    }
+                }
+            }
+
+            return tools;
         }
     }
 }

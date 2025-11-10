@@ -6,7 +6,7 @@ using ModelContextProtocol.Protocol;
 using UnityAIStudio.McpServer.Tools.Attributes;
 using UnityEditor;
 
-namespace UnityAIStudio.McpServer.Tools
+namespace UnityAIStudio.McpServer.Tools 
 {
     /// <summary>
     /// 执行Unity编辑器菜单项

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using UnityAIStudio.McpServer.Models;
+using UnityAIStudio.McpServer.Editor.Window.Models;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,6 +21,7 @@ namespace UnityAIStudio.McpServer.Services
         public event Action<ConnectionStatus> OnConnectionStatusChanged;
         public event Action<string> OnLogMessage;
         public event Action<List<McpTool>> OnToolsListUpdated;
+        public event Action<List<McpToolPackage>> OnToolPackagesListUpdated;
 
         // State
         public ServerState State { get; private set; }
@@ -27,6 +30,7 @@ namespace UnityAIStudio.McpServer.Services
         // Private fields
         private Process serverProcess;
         private List<McpTool> availableTools;
+        private List<McpToolPackage> availableToolPackages;
         private float lastUpdateTime;
 
         public McpServerService()
@@ -126,27 +130,28 @@ namespace UnityAIStudio.McpServer.Services
         {
             availableTools = new List<McpTool>
             {
-                new McpTool("GetGameObject", "Get GameObject by name or path", "Scene"),
-                new McpTool("CreateGameObject", "Create a new GameObject in the scene", "Scene"),
-                new McpTool("DestroyGameObject", "Destroy a GameObject", "Scene"),
-                new McpTool("GetComponent", "Get component from GameObject", "Component"),
-                new McpTool("AddComponent", "Add component to GameObject", "Component"),
-                new McpTool("RemoveComponent", "Remove component from GameObject", "Component"),
-                new McpTool("SetPosition", "Set GameObject position", "Transform"),
-                new McpTool("SetRotation", "Set GameObject rotation", "Transform"),
-                new McpTool("SetScale", "Set GameObject scale", "Transform"),
-                new McpTool("LoadScene", "Load a Unity scene", "Scene"),
-                new McpTool("SaveScene", "Save current scene", "Scene"),
-                new McpTool("PlayMode", "Enter/Exit play mode", "Editor"),
-                new McpTool("CompileScripts", "Trigger script compilation", "Editor"),
-                new McpTool("GetProjectInfo", "Get Unity project information", "Project"),
-                new McpTool("ListAssets", "List assets in project", "Assets"),
-                new McpTool("ImportAsset", "Import asset into project", "Assets"),
-                new McpTool("ExportPackage", "Export Unity package", "Assets"),
-                new McpTool("CreateMaterial", "Create a new material", "Assets"),
-                new McpTool("CreatePrefab", "Create a prefab from GameObject", "Assets"),
-                new McpTool("ExecuteMenuItem", "Execute Unity menu item", "Editor")
+                new McpTool("GetGameObject", "Get GameObject by name or path"),
+                new McpTool("CreateGameObject", "Create a new GameObject in the scene"),
+                new McpTool("DestroyGameObject", "Destroy a GameObject"),
+                new McpTool("GetComponent", "Get component from GameObject"),
+                new McpTool("AddComponent", "Add component to GameObject"),
+                new McpTool("RemoveComponent", "Remove component from GameObject"),
+                new McpTool("SetPosition", "Set GameObject position"),
+                new McpTool("SetRotation", "Set GameObject rotation"),
+                new McpTool("SetScale", "Set GameObject scale"),
+                new McpTool("LoadScene", "Load a Unity scene"),
+                new McpTool("SaveScene", "Save current scene"),
+                new McpTool("PlayMode", "Enter/Exit play mode"),
+                new McpTool("CompileScripts", "Trigger script compilation"),
+                new McpTool("GetProjectInfo", "Get Unity project information"),
+                new McpTool("ListAssets", "List assets in project"),
+                new McpTool("ImportAsset", "Import asset into project"),
+                new McpTool("ExportPackage", "Export Unity package"),
+                new McpTool("CreateMaterial", "Create a new material"),
+                new McpTool("CreatePrefab", "Create a prefab from GameObject"),
+                new McpTool("ExecuteMenuItem", "Execute Unity menu item")
             };
+            availableToolPackages = new List<McpToolPackage>();
         }
 
         public List<McpTool> GetAvailableTools()
@@ -169,6 +174,33 @@ namespace UnityAIStudio.McpServer.Services
             {
                 tool.enabled = enabled;
                 Log($"Tool '{toolName}' {(enabled ? "enabled" : "disabled")}");
+            }
+        }
+
+        public List<McpToolPackage> GetAvailableToolPackages()
+        {
+            return new List<McpToolPackage>(availableToolPackages ?? new List<McpToolPackage>());
+        }
+
+        public void RefreshToolPackages()
+        {
+            Log("Refreshing tool packages list...");
+            // For this mock implementation, create empty list
+            // In the real implementation (McpServerServiceCore), this discovers packages
+            availableToolPackages = new List<McpToolPackage>();
+            OnToolPackagesListUpdated?.Invoke(availableToolPackages);
+            Log($"Found {availableToolPackages.Count} available tool packages");
+        }
+
+        public void SetToolPackageEnabled(string className, bool enabled)
+        {
+            var toolPackage = availableToolPackages?.Find(p => p.className == className);
+            if (toolPackage != null)
+            {
+                toolPackage.enabled = enabled;
+                EditorPrefs.SetBool(toolPackage.GetPrefsKey(), enabled);
+                Log($"Tool package '{toolPackage.displayName}' {(enabled ? "enabled" : "disabled")}");
+                OnToolPackagesListUpdated?.Invoke(availableToolPackages);
             }
         }
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityAIStudio.McpServer.Models;
+using UnityAIStudio.McpServer.Editor.Window.Models;
 using UnityAIStudio.McpServer.Services;
 using UnityEditor;
 using UnityEngine;
@@ -40,6 +41,7 @@ namespace UnityAIStudio.McpServer.UI
             service.OnConnectionStatusChanged += OnConnectionStatusChanged;
             service.OnLogMessage += OnLogMessage;
             service.OnToolsListUpdated += OnToolsListUpdated;
+            service.OnToolPackagesListUpdated += OnToolPackagesListUpdated;
 
             // 载入日志上限（可选持久化）
             maxLogMessages = EditorPrefs.GetInt("UnityAIStudio.McpServer.Logs.MaxLines", 100);
@@ -60,6 +62,7 @@ namespace UnityAIStudio.McpServer.UI
             service.OnConnectionStatusChanged -= OnConnectionStatusChanged;
             service.OnLogMessage -= OnLogMessage;
             service.OnToolsListUpdated -= OnToolsListUpdated;
+            service.OnToolPackagesListUpdated -= OnToolPackagesListUpdated;
 
             // 保存日志上限
             EditorPrefs.SetInt("UnityAIStudio.McpServer.Logs.MaxLines", maxLogMessages);
@@ -331,11 +334,11 @@ namespace UnityAIStudio.McpServer.UI
         private void DrawToolsSection()
         {
             EditorGUILayout.BeginHorizontal();
-            showTools = EditorGUILayout.Foldout(showTools, "🛠️ Available Tools", true, McpUIStyles.FoldoutStyle);
+            showTools = EditorGUILayout.Foldout(showTools, "📦 Tool Packages", true, McpUIStyles.FoldoutStyle);
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("🔄 Refresh", GUILayout.Width(90), GUILayout.Height(22)))
             {
-                service.RefreshTools();
+                service.RefreshToolPackages();
             }
             EditorGUILayout.EndHorizontal();
 
@@ -343,18 +346,28 @@ namespace UnityAIStudio.McpServer.UI
 
             EditorGUILayout.BeginVertical(McpUIStyles.StatusBoxStyle);
 
-            // Search card（仅搜索框，不再分类/启用开关）
-            DrawToolsFilter();
+            // Info message
+            EditorGUILayout.HelpBox(
+                "Tool packages control which tools are available to MCP clients. " +
+                "Disabled packages and their tools will not be discovered by the server. " +
+                "Restart the server after making changes.",
+                MessageType.Info
+            );
+
+            GUILayout.Space(5);
+
+            // Search filter
+            DrawToolPackagesFilter();
 
             GUILayout.Space(8);
 
-            // Tools list
-            DrawToolsList();
+            // Tool packages list
+            DrawToolPackagesList();
 
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawToolsFilter()
+        private void DrawToolPackagesFilter()
         {
             EditorGUILayout.BeginVertical(McpUIStyles.CardStyle);
 
@@ -363,72 +376,166 @@ namespace UnityAIStudio.McpServer.UI
             toolSearchFilter = EditorGUILayout.TextField(toolSearchFilter);
             EditorGUILayout.EndHorizontal();
 
-            GUILayout.Space(5);
-
-            // 分类筛选移除，仅展示搜索
-
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawToolsList()
+        private void DrawToolPackagesList()
         {
-            var tools = service.GetAvailableTools();
-            var filteredTools = tools.Where(t =>
+            var toolPackages = service.GetAvailableToolPackages();
+            var filteredPackages = toolPackages.Where(p =>
                 string.IsNullOrEmpty(toolSearchFilter)
-                || (t.name != null && t.name.ToLower().Contains(toolSearchFilter.ToLower()))
-                || (t.description != null && t.description.ToLower().Contains(toolSearchFilter.ToLower()))
+                || (p.displayName != null && p.displayName.ToLower().Contains(toolSearchFilter.ToLower()))
+                || (p.description != null && p.description.ToLower().Contains(toolSearchFilter.ToLower()))
+                || (p.category != null && p.category.ToLower().Contains(toolSearchFilter.ToLower()))
             ).ToList();
 
-            var toolCountStyle = new GUIStyle(EditorStyles.miniLabel)
+            var enabledCount = toolPackages.Count(p => p.enabled);
+            var disabledCount = toolPackages.Count - enabledCount;
+
+            var countStyle = new GUIStyle(EditorStyles.miniLabel)
             {
                 normal = { textColor = new Color(0.7f, 0.7f, 0.7f) }
             };
-            EditorGUILayout.LabelField($"Showing {filteredTools.Count} of {tools.Count} tools", toolCountStyle);
+            EditorGUILayout.LabelField(
+                $"Showing {filteredPackages.Count} of {toolPackages.Count} packages ({enabledCount} enabled, {disabledCount} disabled)",
+                countStyle
+            );
 
             GUILayout.Space(5);
 
-            toolsScrollPosition = EditorGUILayout.BeginScrollView(toolsScrollPosition, GUILayout.Height(200));
+            toolsScrollPosition = EditorGUILayout.BeginScrollView(toolsScrollPosition, GUILayout.Height(250));
 
-            foreach (var tool in filteredTools)
+            foreach (var package in filteredPackages)
             {
-                DrawToolItem(tool);
+                DrawToolPackageItem(package);
             }
 
             EditorGUILayout.EndScrollView();
         }
 
-        private void DrawToolItem(McpTool tool)
+        private void DrawToolPackageItem(McpToolPackage package)
         {
-            var toolBoxStyle = new GUIStyle(EditorStyles.helpBox)
+            var boxStyle = new GUIStyle(EditorStyles.helpBox)
             {
                 padding = new RectOffset(10, 10, 8, 8),
                 margin = new RectOffset(0, 0, 2, 2)
             };
 
-            EditorGUILayout.BeginHorizontal(toolBoxStyle);
+            // Visual feedback for disabled packages
+            var originalBgColor = GUI.backgroundColor;
+            if (!package.enabled)
+            {
+                GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.6f);
+            }
 
-            // 不再提供启用/关闭开关
-            GUILayout.Space(6);
+            EditorGUILayout.BeginHorizontal(boxStyle);
+            GUI.backgroundColor = originalBgColor;
+
+            // Enable/Disable toggle
+            bool newEnabled = EditorGUILayout.Toggle(package.enabled, GUILayout.Width(20));
+            if (newEnabled != package.enabled)
+            {
+                service.SetToolPackageEnabled(package.className, newEnabled);
+
+                // Show restart reminder
+                string action = newEnabled ? "enabled" : "disabled";
+                string message = $"Tool package '{package.category}' {action}.\n\n" +
+                                $"The {package.toolCount} tools in this package will be {action}.\n\n" +
+                                $"⚠️ Please restart the MCP Server for changes to take effect.";
+
+                if (service.State.Status == ServerStatus.Running)
+                {
+                    bool shouldRestart = EditorUtility.DisplayDialog(
+                        "Tool Package Changed",
+                        message + "\n\nWould you like to restart the server now?",
+                        "Restart Now",
+                        "Later"
+                    );
+
+                    if (shouldRestart)
+                    {
+                        service.Restart();
+                    }
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog(
+                        "Tool Package Changed",
+                        message,
+                        "OK"
+                    );
+                }
+            }
 
             EditorGUILayout.BeginVertical();
-            var toolNameStyle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 11 };
-            EditorGUILayout.LabelField(tool.name, toolNameStyle);
 
-            var descStyle = new GUIStyle(EditorStyles.miniLabel)
+            // Category name as main title and tool count
+            EditorGUILayout.BeginHorizontal();
+            var nameStyle = new GUIStyle(EditorStyles.boldLabel)
             {
-                normal = { textColor = new Color(0.7f, 0.7f, 0.7f) },
-                wordWrap = true
+                fontSize = 12,
+                normal = { textColor = package.enabled ? Color.white : new Color(0.6f, 0.6f, 0.6f) }
             };
-            EditorGUILayout.LabelField(tool.description, descStyle);
-            EditorGUILayout.EndVertical();
+            EditorGUILayout.LabelField(package.category, nameStyle);
 
-            // 展示类别标签（只读）
-            var categoryStyle = new GUIStyle(EditorStyles.miniLabel)
+            var countBadgeStyle = new GUIStyle(EditorStyles.miniLabel)
             {
                 normal = { textColor = McpUIStyles.InfoColor },
-                alignment = TextAnchor.MiddleRight
+                fontStyle = FontStyle.Bold
             };
-            EditorGUILayout.LabelField($"[" + (tool.category ?? "General") + "]", categoryStyle, GUILayout.Width(90));
+            EditorGUILayout.LabelField($"({package.toolCount} tools)", countBadgeStyle, GUILayout.Width(70));
+
+            // Disabled badge
+            if (!package.enabled)
+            {
+                var disabledBadgeStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    normal = { textColor = McpUIStyles.WarningColor },
+                    fontStyle = FontStyle.Bold,
+                    fontSize = 10
+                };
+                EditorGUILayout.LabelField("⊗ DISABLED", disabledBadgeStyle, GUILayout.Width(80));
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            // Class name as subtitle
+            var classNameStyle = new GUIStyle(EditorStyles.miniLabel)
+            {
+                normal = { textColor = new Color(0.6f, 0.7f, 0.8f) },
+                fontSize = 10
+            };
+            EditorGUILayout.LabelField($"Class: {package.displayName}", classNameStyle);
+
+            // Description
+            if (!string.IsNullOrEmpty(package.description))
+            {
+                var descStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    normal = { textColor = new Color(0.7f, 0.7f, 0.7f) },
+                    wordWrap = true,
+                    fontSize = 10
+                };
+                EditorGUILayout.LabelField(package.description, descStyle);
+            }
+
+            // Show tool names in a smaller font
+            if (package.toolNames != null && package.toolNames.Count > 0)
+            {
+                var toolNamesText = string.Join(", ", package.toolNames);
+                var toolNamesStyle = new GUIStyle(EditorStyles.miniLabel)
+                {
+                    normal = { textColor = new Color(0.5f, 0.6f, 0.65f) },
+                    fontSize = 9,
+                    wordWrap = true,
+                    fontStyle = FontStyle.Italic
+                };
+                EditorGUILayout.LabelField($"Tools: {toolNamesText}", toolNamesStyle);
+            }
+
+            EditorGUILayout.EndVertical();
+
+            GUILayout.FlexibleSpace();
 
             EditorGUILayout.EndHorizontal();
         }
@@ -547,6 +654,11 @@ namespace UnityAIStudio.McpServer.UI
         private void OnToolsListUpdated(List<McpTool> tools)
         {
             Debug.Log($"Tools list updated: {tools.Count} tools available");
+        }
+
+        private void OnToolPackagesListUpdated(List<McpToolPackage> toolPackages)
+        {
+            Debug.Log($"Tool packages list updated: {toolPackages.Count} packages available");
         }
 
         #endregion

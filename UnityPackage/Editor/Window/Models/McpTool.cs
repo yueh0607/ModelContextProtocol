@@ -10,20 +10,18 @@ namespace UnityAIStudio.McpServer.Models
     {
         public string name;
         public string description;
-        public string category;
         public bool enabled;
 
-        public McpTool(string name, string description, string category = "General")
+        public McpTool(string name, string description)
         {
             this.name = name;
             this.description = description;
-            this.category = category;
             enabled = true;
         }
 
         public override string ToString()
         {
-            return $"{name} ({category}) - {description}";
+            return $"{name} - {description}";
         }
     }
 }
