@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ModelContextProtocol.Protocol;
 using UnityEditor;
 using UnityEngine;
 
@@ -76,12 +77,19 @@ namespace UnityAIStudio.McpServer.Tools
                     }
                 }
 
-                // 没找到时，根据配置决定是否保持原值
-                return KeepOriginalIfNotFound ? value : value;
+                // 没找到时，根据配置决定是否保持原值或返回错误
+                return KeepOriginalIfNotFound
+                    ? value
+                    : McpUtils.Error($"Asset not found: {inputPath}");
+            }
+            catch (ArgumentException ex)
+            {
+                // 参数验证失败（如多个匹配），返回错误
+                return McpUtils.Error(ex.Message);
             }
             catch
             {
-                // 处理失败，返回原值
+                // 其他处理失败，返回原值
                 return value;
             }
         }
@@ -146,8 +154,10 @@ namespace UnityAIStudio.McpServer.Tools
                 }
                 else if (searchResults.Count > 1)
                 {
-                    // 找到多个匹配，返回null
-                    return null;
+                    // 找到多个匹配，抛出异常让Process方法处理
+                    string matches = string.Join(", ", searchResults);
+                    throw new ArgumentException(
+                        $"Multiple assets found matching '{normalizedPath}': {matches}. Please specify a more precise path.");
                 }
                 else
                 {
