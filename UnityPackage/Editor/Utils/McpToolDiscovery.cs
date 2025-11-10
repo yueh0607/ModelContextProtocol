@@ -320,7 +320,15 @@ namespace UnityAIStudio.McpServer.Tools
                                 paramValues[i] = token.ToObject(param.ParameterType);
 
                                 // 应用参数处理器链
-                                paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
+                                object processedValue = ApplyParameterProcessors(param, paramValues[i]);
+
+                                // 如果处理器返回 CallToolResult 错误，直接返回
+                                if (processedValue is CallToolResult errorResult)
+                                {
+                                    return errorResult;
+                                }
+
+                                paramValues[i] = processedValue;
 
                                 continue;
                             }
@@ -335,13 +343,29 @@ namespace UnityAIStudio.McpServer.Tools
                         {
                             paramValues[i] = paramAttr.DefaultValue;
                             // 对默认值也应用参数处理器链
-                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
+                            object processedValue = ApplyParameterProcessors(param, paramValues[i]);
+
+                            // 如果处理器返回 CallToolResult 错误，直接返回
+                            if (processedValue is CallToolResult errorResult)
+                            {
+                                return errorResult;
+                            }
+
+                            paramValues[i] = processedValue;
                         }
                         else if (param.HasDefaultValue)
                         {
                             paramValues[i] = param.DefaultValue;
                             // 对默认值也应用参数处理器链
-                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
+                            object processedValue = ApplyParameterProcessors(param, paramValues[i]);
+
+                            // 如果处理器返回 CallToolResult 错误，直接返回
+                            if (processedValue is CallToolResult errorResult)
+                            {
+                                return errorResult;
+                            }
+
+                            paramValues[i] = processedValue;
                         }
                         else
                         {
@@ -371,7 +395,15 @@ namespace UnityAIStudio.McpServer.Tools
                                 paramValues[i] = obj[paramName].ToObject(param.ParameterType);
 
                                 // 应用参数处理器链
-                                paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
+                                object processedValue = ApplyParameterProcessors(param, paramValues[i]);
+
+                                // 如果处理器返回 CallToolResult 错误，直接返回
+                                if (processedValue is CallToolResult errorResult)
+                                {
+                                    return errorResult;
+                                }
+
+                                paramValues[i] = processedValue;
                             }
                             catch (Exception ex)
                             {
@@ -382,13 +414,29 @@ namespace UnityAIStudio.McpServer.Tools
                         {
                             paramValues[i] = paramAttr.DefaultValue;
                             // 对默认值也应用参数处理器链
-                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
+                            object processedValue = ApplyParameterProcessors(param, paramValues[i]);
+
+                            // 如果处理器返回 CallToolResult 错误，直接返回
+                            if (processedValue is CallToolResult errorResult)
+                            {
+                                return errorResult;
+                            }
+
+                            paramValues[i] = processedValue;
                         }
                         else if (param.HasDefaultValue)
                         {
                             paramValues[i] = param.DefaultValue;
                             // 对默认值也应用参数处理器链
-                            paramValues[i] = ApplyParameterProcessors(param, paramValues[i]);
+                            object processedValue = ApplyParameterProcessors(param, paramValues[i]);
+
+                            // 如果处理器返回 CallToolResult 错误，直接返回
+                            if (processedValue is CallToolResult errorResult)
+                            {
+                                return errorResult;
+                            }
+
+                            paramValues[i] = processedValue;
                         }
                         else
                         {
@@ -502,22 +550,17 @@ namespace UnityAIStudio.McpServer.Tools
                     {
                         object processedValue = processor.Process(currentValue, param.ParameterType);
 
-                        // 如果处理器返回 CallToolResult 错误，直接抛出
-                        if (processedValue is CallToolResult result && result.IsError)
+                        // 如果处理器返回 CallToolResult，直接返回（可能是错误或其他结果）
+                        if (processedValue is CallToolResult)
                         {
-                            throw new InvalidOperationException($"Parameter validation failed: {result.Content?[0]}");
+                            return processedValue;
                         }
 
                         // 如果处理器返回 null，表示处理失败或不修改，继续使用当前值
-                        if (processedValue != null && !(processedValue is CallToolResult))
+                        if (processedValue != null)
                         {
                             currentValue = processedValue;
                         }
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // InvalidOperationException 表示参数验证失败（来自 CallToolResult），应该向上传播
-                        throw;
                     }
                     catch (ArgumentException)
                     {

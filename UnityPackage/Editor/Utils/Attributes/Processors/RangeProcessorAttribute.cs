@@ -55,8 +55,8 @@ namespace UnityAIStudio.McpServer.Tools
                     return value;
                 }
 
-                // 验证范围（注意：用户修改为 <= 和 >=，这意味着边界值也不允许）
-                if (numValue <= Min || numValue >= Max)
+                // 验证范围
+                if (numValue < Min || numValue > Max)
                 {
                     return McpUtils.Error(
                         $"Value {numValue} is out of range. Expected value between {Min} and {Max}.");
