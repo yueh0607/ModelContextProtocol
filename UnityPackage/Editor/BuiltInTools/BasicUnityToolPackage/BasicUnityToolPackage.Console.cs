@@ -49,10 +49,16 @@ namespace UnityAIStudio.McpServer.Tools
                             "Console tool failed to initialize due to reflection errors. Cannot access console logs.");
                     }
 
-                    // types 参数已经通过 OptionsProcessor 处理，可以直接使用
+                    // 解析日志类型（OptionsProcessor应该已处理，但保留手动处理作为后备）
                     var typeList = types.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(t => t.Trim().ToLower())
                         .ToList();
+
+                    // 如果包含 "all"，展开为所有类型
+                    if (typeList.Contains("all"))
+                    {
+                        typeList = new List<string> { "log", "warning", "error" };
+                    }
 
                     return GetConsoleEntriesReadable(typeList, count, filterText, includeStacktrace);
                 }
