@@ -1,10 +1,11 @@
 using System;
+using ModelContextProtocol.Protocol;
 
 namespace UnityAIStudio.McpServer.Tools
 {
     /// <summary>
     /// 数值范围验证处理器
-    /// 验证数值是否在指定范围内，超出范围则抛出异常
+    /// 验证数值是否在指定范围内，超出范围则返回错误
     /// </summary>
     public class RangeProcessorAttribute : McpParameterProcessorAttribute
     {
@@ -54,19 +55,14 @@ namespace UnityAIStudio.McpServer.Tools
                     return value;
                 }
 
-                // 验证范围
-                if (numValue < Min || numValue > Max)
+                // 验证范围（注意：用户修改为 <= 和 >=，这意味着边界值也不允许）
+                if (numValue <= Min || numValue >= Max)
                 {
-                    throw new ArgumentException(
+                    return McpUtils.Error(
                         $"Value {numValue} is out of range. Expected value between {Min} and {Max}.");
                 }
 
                 return value;
-            }
-            catch (ArgumentException)
-            {
-                // 重新抛出参数异常
-                throw;
             }
             catch
             {

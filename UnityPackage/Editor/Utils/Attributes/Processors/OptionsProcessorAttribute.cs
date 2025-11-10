@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ModelContextProtocol.Protocol;
 
 namespace UnityAIStudio.McpServer.Tools
 {
@@ -92,11 +93,11 @@ namespace UnityAIStudio.McpServer.Tools
                     }
                 }
 
-                // 如果没有任何有效选项，抛出异常
+                // 如果没有任何有效选项，返回错误
                 if (validatedOptions.Count == 0)
                 {
                     string validOptionsStr = string.Join(", ", ValidOptions);
-                    throw new ArgumentException(
+                    return McpUtils.Error(
                         $"No valid options found in '{inputValue}'. Valid options are: {validOptionsStr}");
                 }
 
@@ -112,9 +113,9 @@ namespace UnityAIStudio.McpServer.Tools
                     return matchedOption;
                 }
 
-                // 无效选项，抛出异常
+                // 无效选项，返回错误
                 string validOptionsStr = string.Join(", ", ValidOptions);
-                throw new ArgumentException(
+                return McpUtils.Error(
                     $"Invalid option '{inputValue.Trim()}'. Valid options are: {validOptionsStr}");
             }
         }

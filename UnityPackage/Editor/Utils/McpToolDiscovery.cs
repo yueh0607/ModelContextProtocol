@@ -502,11 +502,22 @@ namespace UnityAIStudio.McpServer.Tools
                     {
                         object processedValue = processor.Process(currentValue, param.ParameterType);
 
+                        // 如果处理器返回 CallToolResult 错误，直接抛出
+                        if (processedValue is CallToolResult result && result.IsError)
+                        {
+                            throw new InvalidOperationException($"Parameter validation failed: {result.Content?[0]}");
+                        }
+
                         // 如果处理器返回 null，表示处理失败或不修改，继续使用当前值
-                        if (processedValue != null)
+                        if (processedValue != null && !(processedValue is CallToolResult))
                         {
                             currentValue = processedValue;
                         }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // InvalidOperationException 表示参数验证失败（来自 CallToolResult），应该向上传播
+                        throw;
                     }
                     catch (ArgumentException)
                     {
