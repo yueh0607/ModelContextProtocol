@@ -41,7 +41,7 @@ namespace UnityAIStudio.McpServer.Tools
             [McpParameter("(Single mode) Name of the property to set. Supports nested properties (e.g., 'size.x'). Only used if propertiesJson is empty.")]
             [TrimProcessor]
             string propertyName = null,
-            [McpParameter("(Single mode) Value to set. Format:\n- Numbers: '123', '3.14'\n- Booleans: 'true', 'false'\n- Strings: 'Hello'\n- Vector3: '1,2,3'\n- Color: '#FF0000' or '1,0,0,1'\nOnly used if propertiesJson is empty.")]
+            [McpParameter("(Single mode) Value to set. Supported formats:\n- Numbers: '123', '3.14'\n- Booleans: 'true', 'false'\n- Strings: 'Hello'\n- Vector3: '1,2,3'\n- Color: '#FF0000' or '1,0,0,1'\n- GameObject reference: 'Path/To/Object' or '@GameObject:Path/To/Object'\n- Component reference: 'Path/To/Object' or '@Component:Path/To/Object:ComponentType'\nOnly used if propertiesJson is empty.")]
             [TrimProcessor]
             string propertyValue = null,
             CancellationToken ct = default)
@@ -142,7 +142,7 @@ namespace UnityAIStudio.McpServer.Tools
                             // 批量设置属性
                             foreach (var kvp in parseResult.Properties)
                             {
-                                var setResult = SetPropertyValue(component, kvp.Key, kvp.Value);
+                                var setResult = SetPropertyValue(component, kvp.Key, kvp.Value, prefabContentsRoot);
                                 setResult.PropertyName = kvp.Key;
                                 results.Add(setResult);
                             }
@@ -150,7 +150,7 @@ namespace UnityAIStudio.McpServer.Tools
                         else
                         {
                             // 单个属性设置
-                            var setResult = SetPropertyValue(component, propertyName, propertyValue);
+                            var setResult = SetPropertyValue(component, propertyName, propertyValue, prefabContentsRoot);
                             setResult.PropertyName = propertyName;
                             results.Add(setResult);
                         }
@@ -272,9 +272,9 @@ namespace UnityAIStudio.McpServer.Tools
         }
 
         /// <summary>
-        /// 设置对象的属性值（支持嵌套属性）
+        /// 设置对象的属性值（支持嵌套属性和对象引用）
         /// </summary>
-        private SetPropertyResult SetPropertyValue(object obj, string propertyPath, string valueString)
+        private SetPropertyResult SetPropertyValue(object obj, string propertyPath, string valueString, GameObject prefabRoot)
         {
             try
             {
@@ -311,7 +311,7 @@ namespace UnityAIStudio.McpServer.Tools
                         parentObject = currentObject;
 
                         Type memberType = field != null ? field.FieldType : property.PropertyType;
-                        object convertedValue = ConvertValueFromString(valueString, memberType);
+                        object convertedValue = ConvertValueFromString(valueString, memberType, prefabRoot);
 
                         if (convertedValue == null && !IsNullableType(memberType))
                         {
@@ -380,9 +380,9 @@ namespace UnityAIStudio.McpServer.Tools
         }
 
         /// <summary>
-        /// 将字符串转换为指定类型的值
+        /// 将字符串转换为指定类型的值（支持GameObject和Component引用）
         /// </summary>
-        private object ConvertValueFromString(string valueString, Type targetType)
+        private object ConvertValueFromString(string valueString, Type targetType, GameObject prefabRoot)
         {
             try
             {
@@ -390,6 +390,18 @@ namespace UnityAIStudio.McpServer.Tools
                 if (string.IsNullOrWhiteSpace(valueString) && IsNullableType(targetType))
                 {
                     return null;
+                }
+
+                // 处理 GameObject 引用
+                if (targetType == typeof(GameObject) || targetType.IsSubclassOf(typeof(GameObject)))
+                {
+                    return ResolveGameObjectReference(valueString, prefabRoot);
+                }
+
+                // 处理 Component 引用（包括所有继承自Component的类型，如Transform、Rigidbody等）
+                if (typeof(Component).IsAssignableFrom(targetType))
+                {
+                    return ResolveComponentReference(valueString, targetType, prefabRoot);
                 }
 
                 // 基本类型
@@ -571,7 +583,102 @@ namespace UnityAIStudio.McpServer.Tools
             if (value is Color c)
                 return $"RGBA({c.r:F2}, {c.g:F2}, {c.b:F2}, {c.a:F2})";
 
+            // GameObject 和 Component 显示为名称和类型
+            if (value is GameObject go)
+                return $"GameObject({go.name})";
+
+            if (value is Component comp)
+                return $"{comp.GetType().Name}({comp.gameObject.name})";
+
             return value.ToString();
+        }
+
+        /// <summary>
+        /// 解析GameObject引用
+        /// 支持的格式：
+        /// - 空字符串或"null": 返回null
+        /// - "." 或空路径: 返回根GameObject
+        /// - "Path/To/Object": Prefab内的层级路径
+        /// - "@GameObject:Path/To/Object": 显式指定GameObject引用（可选）
+        /// </summary>
+        private GameObject ResolveGameObjectReference(string reference, GameObject prefabRoot)
+        {
+            if (string.IsNullOrWhiteSpace(reference) || reference.ToLower() == "null")
+            {
+                return null;
+            }
+
+            // 移除可选的 @GameObject: 前缀
+            string path = reference;
+            if (reference.StartsWith("@GameObject:", StringComparison.OrdinalIgnoreCase))
+            {
+                path = reference.Substring("@GameObject:".Length);
+            }
+
+            // "." 或空路径表示根对象
+            if (string.IsNullOrWhiteSpace(path) || path == ".")
+            {
+                return prefabRoot;
+            }
+
+            // 使用现有的查找方法
+            Transform foundTransform = FindTransformByPath(prefabRoot.transform, path);
+            return foundTransform != null ? foundTransform.gameObject : null;
+        }
+
+        /// <summary>
+        /// 解析Component引用
+        /// 支持的格式：
+        /// - 空字符串或"null": 返回null
+        /// - "Path/To/Object": 在该路径的GameObject上查找指定类型的Component
+        /// - "@Component:Path/To/Object:ComponentType": 显式指定Component类型（可选）
+        /// </summary>
+        private Component ResolveComponentReference(string reference, Type componentType, GameObject prefabRoot)
+        {
+            if (string.IsNullOrWhiteSpace(reference) || reference.ToLower() == "null")
+            {
+                return null;
+            }
+
+            string path = reference;
+            Type specifiedType = componentType;
+
+            // 解析 @Component:Path:Type 格式
+            if (reference.StartsWith("@Component:", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = reference.Substring("@Component:".Length).Split(new[] { ':' }, 2);
+                path = parts[0];
+
+                // 如果指定了类型，尝试解析
+                if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    Type foundType = FindComponentType(parts[1]);
+                    if (foundType != null && typeof(Component).IsAssignableFrom(foundType))
+                    {
+                        specifiedType = foundType;
+                    }
+                }
+            }
+
+            // 查找GameObject
+            GameObject targetObject;
+            if (string.IsNullOrWhiteSpace(path) || path == ".")
+            {
+                targetObject = prefabRoot;
+            }
+            else
+            {
+                Transform foundTransform = FindTransformByPath(prefabRoot.transform, path);
+                if (foundTransform == null)
+                {
+                    return null;
+                }
+                targetObject = foundTransform.gameObject;
+            }
+
+            // 在GameObject上查找指定类型的Component
+            Component component = targetObject.GetComponent(specifiedType);
+            return component;
         }
     }
 }
