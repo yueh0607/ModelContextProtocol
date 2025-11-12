@@ -17,7 +17,7 @@ using UnityEngine;
 namespace UnityAIStudio.McpServer.Services
 {
     /// <summary>
-    /// MCP Server service implementation - 基于Core库的适配器
+    /// MCP Server service implementation - 基于Core库的适配�?
     /// </summary>
     public class McpServerServiceCore : IMcpServerService
     {
@@ -52,7 +52,7 @@ namespace UnityAIStudio.McpServer.Services
             Config = ServerConfig.Load();
             InitializeTools();
 
-            // 初始化主线程调度器
+            // 初始化主线程调度�?
             UnityMainThreadScheduler.Initialize();
         }
 
@@ -69,7 +69,24 @@ namespace UnityAIStudio.McpServer.Services
             Config.port = port;
             Config.Save();
 
+            if (!IsPortAvailable(port))
+            {
+                string message = $"Port {port} is already in use. Please choose another port.";
+                State.ErrorMessage = message;
+                Log(message);
+                SetConnectionStatus(ConnectionStatus.Error);
+
+                EditorApplication.delayCall += () =>
+                {
+                    EditorUtility.DisplayDialog("Port In Use", message, "OK");
+                };
+
+                SetServerStatus(ServerStatus.Stopped);
+                return;
+            }
+
             State.CurrentPort = port;
+            SetConnectionStatus(ConnectionStatus.Connecting);
             SetServerStatus(ServerStatus.Starting);
             Log($"Starting MCP Server on port {port}...");
 
@@ -84,7 +101,7 @@ namespace UnityAIStudio.McpServer.Services
                 // 3. 添加Unity工具
                 RegisterTools(options);
 
-                // 4. 创建Core服务器
+                // 4. 创建Core服务�?
                 coreServer = new TransportBasedMcpServer(transport, options);
 
                 // 5. 启动服务器（在后台线程）
@@ -110,7 +127,7 @@ namespace UnityAIStudio.McpServer.Services
                     }
                 }, cancellationTokenSource.Token);
 
-                // 6. 更新状态
+                // 6. 更新状�?
                 State.StartTime = DateTime.Now;
                 SetServerStatus(ServerStatus.Running);
                 SetConnectionStatus(ConnectionStatus.Connected);
@@ -119,9 +136,18 @@ namespace UnityAIStudio.McpServer.Services
             }
             catch (Exception ex)
             {
-                SetServerStatus(ServerStatus.Error);
                 State.ErrorMessage = ex.Message;
+                SetConnectionStatus(ConnectionStatus.Error);
                 Log($"Failed to start server: {ex.Message}");
+
+                transport?.Dispose();
+                transport = null;
+                coreServer = null;
+                cancellationTokenSource?.Dispose();
+                cancellationTokenSource = null;
+                serverTask = null;
+
+                SetServerStatus(ServerStatus.Stopped);
             }
         }
 
@@ -138,7 +164,7 @@ namespace UnityAIStudio.McpServer.Services
 
             try
             {
-                // 1. 取消服务器任务
+                // 1. 取消服务器任�?
                 cancellationTokenSource?.Cancel();
 
                 // 2. 停止Transport
@@ -159,7 +185,7 @@ namespace UnityAIStudio.McpServer.Services
                 serverTask = null;
                 cancellationTokenSource = null;
 
-                // 5. 重置状态
+                // 5. 重置状�?
                 State.Reset();
                 SetServerStatus(ServerStatus.Stopped);
                 SetConnectionStatus(ConnectionStatus.Disconnected);
@@ -179,7 +205,7 @@ namespace UnityAIStudio.McpServer.Services
             int port = State.CurrentPort;
             Stop();
 
-            // 延迟启动，确保端口释放
+            // 延迟启动，确保端口释�?
             EditorApplication.delayCall += () =>
             {
                 System.Threading.Thread.Sleep(500);
@@ -193,7 +219,7 @@ namespace UnityAIStudio.McpServer.Services
 
         private void InitializeTools()
         {
-            // 初始为空；在注册工具后由 coreTools 动态构建
+            // 初始为空；在注册工具后由 coreTools 动态构�?
             availableTools = new List<McpTool>();
             availableToolPackages = new List<McpToolPackage>();
         }
@@ -216,7 +242,7 @@ namespace UnityAIStudio.McpServer.Services
 
         private void RegisterTools(McpServerOptions options)
         {
-            // 首先发现所有ToolPackage并加载启用状态
+            // 首先发现所有ToolPackage并加载启用状�?
             availableToolPackages = McpToolDiscovery.DiscoverAllToolPackages();
 
             // 获取启用的ToolPackage类名集合
@@ -230,7 +256,7 @@ namespace UnityAIStudio.McpServer.Services
             // 注册到服务器选项
             options.ToolCollection = coreTools;
 
-            // 同步构建 UI 显示用的工具列表（名称 + 描述）
+            // 同步构建 UI 显示用的工具列表（名�? + 描述�?
             RebuildAvailableToolsFromCore();
             OnToolsListUpdated?.Invoke(availableTools);
             OnToolPackagesListUpdated?.Invoke(availableToolPackages);
@@ -246,7 +272,7 @@ namespace UnityAIStudio.McpServer.Services
         public void RefreshTools()
         {
             Log("Refreshing tools list...");
-            // 从 coreTools 重新构建（允许域重载后刷新）
+            // �? coreTools 重新构建（允许域重载后刷新）
             RebuildAvailableToolsFromCore();
             OnToolsListUpdated?.Invoke(availableTools);
             Log($"Found {availableTools.Count} available tools");
@@ -336,7 +362,7 @@ namespace UnityAIStudio.McpServer.Services
             {
                 lastUpdateTime = currentTime;
 
-                // 检查服务器任务状态
+                // 检查服务器任务状�?
                 if (State.Status == ServerStatus.Running && serverTask != null)
                 {
                     if (serverTask.IsFaulted)
