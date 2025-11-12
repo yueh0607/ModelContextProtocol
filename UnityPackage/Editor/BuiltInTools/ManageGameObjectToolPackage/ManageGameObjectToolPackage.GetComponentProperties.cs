@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
+using System.Text; 
 using System.Threading;
 using System.Threading.Tasks;
 using ModelContextProtocol.Protocol;
@@ -20,7 +20,7 @@ namespace UnityAIStudio.McpServer.Tools
         /// 获取 Prefab 中 GameObject 的组件属性
         /// </summary>
         [McpTool(
-            Description = "Get all properties and their current values from a component in a Prefab. Shows both fields and properties.",
+            Description = "Get properties from a component. If propertyPath is empty, returns all available property names. If specified, returns values for those properties. Supports multiple properties (comma-separated) and nested access (e.g., 'position.x,enabled' or 'materials[0].name').",
             Category = "Component Management"
         )]
         public async Task<CallToolResult> GetComponentProperties(
@@ -33,6 +33,9 @@ namespace UnityAIStudio.McpServer.Tools
             [McpParameter("Type name of the component (e.g., 'BoxCollider', 'Transform')")]
             [TrimProcessor]
             string componentTypeName = null,
+            [McpParameter("Property paths to query, comma-separated (e.g., 'position.x,enabled' or 'materials[0].name'). Leave empty to list all property names.")]
+            [TrimProcessor]
+            string propertyPath = "",
             [McpParameter("Include inherited properties from base classes (default: true)")]
             bool includeInherited = true,
             CancellationToken ct = default)
@@ -101,41 +104,61 @@ namespace UnityAIStudio.McpServer.Tools
                                 $"Use ReadPrefabStructure to see what components are attached.");
                         }
 
-                        // 构建属性信息
                         StringBuilder sb = new StringBuilder();
                         string targetPathDisplay = string.IsNullOrWhiteSpace(gameObjectPath) ? "(root)" : gameObjectPath;
 
                         sb.AppendLine($"Component: {componentType.Name}");
-                        sb.AppendLine($"Full Type: {componentType.FullName}");
                         sb.AppendLine($"GameObject: {targetObject.name}");
-                        sb.AppendLine($"GameObject Path: {targetPathDisplay}");
-                        sb.AppendLine($"Prefab: {prefabPath}");
+                        sb.AppendLine($"Path: {targetPathDisplay}");
                         sb.AppendLine();
-                        sb.AppendLine("Properties and Fields:");
-                        sb.AppendLine("======================");
 
-                        var properties = GetComponentPropertiesInfo(component, componentType, includeInherited);
-
-                        if (properties.Count == 0)
+                        // 如果指定了 propertyPath，查询特定属性（支持多个，用逗号分隔）
+                        if (!string.IsNullOrWhiteSpace(propertyPath))
                         {
-                            sb.AppendLine("(No public properties or fields found)");
+                            // 分割多个属性路径
+                            string[] paths = propertyPath.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            foreach (string path in paths)
+                            {
+                                string trimmedPath = path.Trim();
+                                if (string.IsNullOrEmpty(trimmedPath))
+                                    continue;
+
+                                try
+                                {
+                                    object value = GetPropertyValueByPath(component, componentType, trimmedPath, includeInherited);
+                                    string valueStr = FormatPropertyValue(value, value?.GetType());
+                                    sb.AppendLine($"{trimmedPath} : {valueStr}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    sb.AppendLine($"{trimmedPath} : <Error: {ex.Message}>");
+                                }
+                            }
                         }
                         else
                         {
-                            foreach (var prop in properties)
+                            // 否则列出所有属性名
+                            var propertyNames = GetComponentPropertyNames(component, componentType, includeInherited);
+
+                            if (propertyNames.Count == 0)
                             {
-                                sb.AppendLine($"  {prop.Name}");
-                                sb.AppendLine($"    Type: {prop.TypeName}");
-                                sb.AppendLine($"    Value: {prop.Value}");
-                                sb.AppendLine($"    Access: {prop.Access}");
-                                if (!string.IsNullOrEmpty(prop.DeclaringType))
+                                sb.AppendLine("(No properties or fields found)");
+                            }
+                            else
+                            {
+                                sb.AppendLine("Available properties:");
+                                foreach (var name in propertyNames)
                                 {
-                                    sb.AppendLine($"    Declared in: {prop.DeclaringType}");
+                                    sb.AppendLine($"  - {name}");
                                 }
                                 sb.AppendLine();
+                                sb.AppendLine($"Total: {propertyNames.Count} properties");
+                                sb.AppendLine();
+                                sb.AppendLine("Use 'propertyPath' parameter to get specific property values.");
+                                sb.AppendLine("Supports multiple properties (comma-separated) and nested access.");
+                                sb.AppendLine("Examples: 'enabled', 'position.x', 'position.x,position.y,enabled'");
                             }
-
-                            sb.AppendLine($"Total: {properties.Count} properties/fields");
                         }
 
                         return McpUtils.Success(sb.ToString());
@@ -159,31 +182,39 @@ namespace UnityAIStudio.McpServer.Tools
         private class PropertyInfo_
         {
             public string Name { get; set; }
-            public string TypeName { get; set; }
             public string Value { get; set; }
-            public string Access { get; set; }
-            public string DeclaringType { get; set; }
         }
 
         /// <summary>
         /// 获取组件的所有属性信息
+        /// 只返回：1. 公开的字段和属性（属性必须是公开读）2. 带SerializeFieldAttribute的字段
         /// </summary>
         private List<PropertyInfo_> GetComponentPropertiesInfo(Component component, Type componentType, bool includeInherited)
         {
             var result = new List<PropertyInfo_>();
             var processedNames = new HashSet<string>();
 
-            BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
+            BindingFlags publicFlags = BindingFlags.Public | BindingFlags.Instance;
+            BindingFlags allFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
             if (!includeInherited)
             {
-                flags |= BindingFlags.DeclaredOnly;
+                publicFlags |= BindingFlags.DeclaredOnly;
+                allFlags |= BindingFlags.DeclaredOnly;
             }
 
-            // 获取所有公共字段
-            FieldInfo[] fields = componentType.GetFields(flags);
-            foreach (var field in fields)
+            // 1. 获取所有字段（包括公开和私有）
+            FieldInfo[] allFields = componentType.GetFields(allFlags);
+            foreach (var field in allFields)
             {
                 if (processedNames.Contains(field.Name))
+                    continue;
+
+                // 只包含：公开字段 或 带SerializeField特性的字段
+                bool isPublic = field.IsPublic;
+                bool hasSerializeField = field.GetCustomAttribute<SerializeField>() != null;
+
+                if (!isPublic && !hasSerializeField)
                     continue;
 
                 processedNames.Add(field.Name);
@@ -194,31 +225,17 @@ namespace UnityAIStudio.McpServer.Tools
                     result.Add(new PropertyInfo_
                     {
                         Name = field.Name,
-                        TypeName = GetFriendlyTypeName(field.FieldType),
-                        Value = FormatPropertyValue(value, field.FieldType),
-                        Access = "Field (Read/Write)",
-                        DeclaringType = includeInherited && field.DeclaringType != componentType
-                            ? field.DeclaringType.Name
-                            : null
+                        Value = FormatPropertyValue(value, field.FieldType)
                     });
                 }
-                catch (Exception ex)
+                catch
                 {
-                    result.Add(new PropertyInfo_
-                    {
-                        Name = field.Name,
-                        TypeName = GetFriendlyTypeName(field.FieldType),
-                        Value = $"<Error: {ex.Message}>",
-                        Access = "Field (Read/Write)",
-                        DeclaringType = includeInherited && field.DeclaringType != componentType
-                            ? field.DeclaringType.Name
-                            : null
-                    });
+                    // 跳过无法读取的字段
                 }
             }
 
-            // 获取所有公共属性
-            PropertyInfo[] properties = componentType.GetProperties(flags);
+            // 2. 获取所有公开属性（必须可读）
+            PropertyInfo[] properties = componentType.GetProperties(publicFlags);
             foreach (var property in properties)
             {
                 if (processedNames.Contains(property.Name))
@@ -228,57 +245,26 @@ namespace UnityAIStudio.McpServer.Tools
                 if (property.GetIndexParameters().Length > 0)
                     continue;
 
+                // 必须是可读的
+                if (!property.CanRead)
+                    continue;
+
                 processedNames.Add(property.Name);
 
                 try
                 {
-                    string access = "";
-                    if (property.CanRead && property.CanWrite)
-                        access = "Property (Read/Write)";
-                    else if (property.CanRead)
-                        access = "Property (Read Only)";
-                    else if (property.CanWrite)
-                        access = "Property (Write Only)";
-
-                    object value = null;
-                    string valueStr = "(not readable)";
-
-                    if (property.CanRead)
-                    {
-                        try
-                        {
-                            value = property.GetValue(component);
-                            valueStr = FormatPropertyValue(value, property.PropertyType);
-                        }
-                        catch (Exception ex)
-                        {
-                            valueStr = $"<Error: {ex.Message}>";
-                        }
-                    }
+                    object value = property.GetValue(component);
+                    string valueStr = FormatPropertyValue(value, property.PropertyType);
 
                     result.Add(new PropertyInfo_
                     {
                         Name = property.Name,
-                        TypeName = GetFriendlyTypeName(property.PropertyType),
-                        Value = valueStr,
-                        Access = access,
-                        DeclaringType = includeInherited && property.DeclaringType != componentType
-                            ? property.DeclaringType.Name
-                            : null
+                        Value = valueStr
                     });
                 }
-                catch (Exception ex)
+                catch
                 {
-                    result.Add(new PropertyInfo_
-                    {
-                        Name = property.Name,
-                        TypeName = GetFriendlyTypeName(property.PropertyType),
-                        Value = $"<Error: {ex.Message}>",
-                        Access = "Property",
-                        DeclaringType = includeInherited && property.DeclaringType != componentType
-                            ? property.DeclaringType.Name
-                            : null
-                    });
+                    // 跳过无法读取的属性
                 }
             }
 
@@ -286,6 +272,227 @@ namespace UnityAIStudio.McpServer.Tools
             result.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
 
             return result;
+        }
+
+        /// <summary>
+        /// 获取组件的所有可访问属性名称列表
+        /// </summary>
+        private List<string> GetComponentPropertyNames(Component component, Type componentType, bool includeInherited)
+        {
+            var result = new List<string>();
+            var processedNames = new HashSet<string>();
+
+            BindingFlags publicFlags = BindingFlags.Public | BindingFlags.Instance;
+            BindingFlags allFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            if (!includeInherited)
+            {
+                publicFlags |= BindingFlags.DeclaredOnly;
+                allFlags |= BindingFlags.DeclaredOnly;
+            }
+
+            // 获取字段
+            FieldInfo[] allFields = componentType.GetFields(allFlags);
+            foreach (var field in allFields)
+            {
+                if (processedNames.Contains(field.Name))
+                    continue;
+
+                bool isPublic = field.IsPublic;
+                bool hasSerializeField = field.GetCustomAttribute<SerializeField>() != null;
+
+                if (!isPublic && !hasSerializeField)
+                    continue;
+
+                try
+                {
+                    // 尝试读取以确保可访问
+                    field.GetValue(component);
+                    processedNames.Add(field.Name);
+                    result.Add(field.Name);
+                }
+                catch
+                {
+                    // 跳过无法读取的字段
+                }
+            }
+
+            // 获取属性
+            PropertyInfo[] properties = componentType.GetProperties(publicFlags);
+            foreach (var property in properties)
+            {
+                if (processedNames.Contains(property.Name))
+                    continue;
+
+                if (property.GetIndexParameters().Length > 0)
+                    continue;
+
+                if (!property.CanRead)
+                    continue;
+
+                try
+                {
+                    // 尝试读取以确保可访问
+                    property.GetValue(component);
+                    processedNames.Add(property.Name);
+                    result.Add(property.Name);
+                }
+                catch
+                {
+                    // 跳过无法读取的属性
+                }
+            }
+
+            result.Sort();
+            return result;
+        }
+
+        /// <summary>
+        /// 根据路径获取属性值，支持嵌套访问和数组索引
+        /// 例如: "position.x", "materials[0].name"
+        /// </summary>
+        private object GetPropertyValueByPath(Component component, Type componentType, string path, bool includeInherited)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Property path cannot be empty");
+
+            object currentObject = component;
+            Type currentType = componentType;
+            string[] parts = SplitPropertyPath(path);
+
+            foreach (string part in parts)
+            {
+                if (currentObject == null)
+                    throw new Exception($"Cannot access property '{part}' on null object");
+
+                // 检查是否是数组/列表索引访问 [index]
+                if (part.Contains("[") && part.EndsWith("]"))
+                {
+                    int bracketStart = part.IndexOf('[');
+                    string propertyName = part.Substring(0, bracketStart);
+                    string indexStr = part.Substring(bracketStart + 1, part.Length - bracketStart - 2);
+
+                    if (!int.TryParse(indexStr, out int index))
+                        throw new Exception($"Invalid array index: {indexStr}");
+
+                    // 如果有属性名，先获取属性
+                    if (!string.IsNullOrEmpty(propertyName))
+                    {
+                        currentObject = GetPropertyOrFieldValue(currentObject, currentType, propertyName, includeInherited);
+                        if (currentObject == null)
+                            throw new Exception($"Property '{propertyName}' is null");
+                        currentType = currentObject.GetType();
+                    }
+
+                    // 访问数组/列表元素
+                    if (currentObject is Array array)
+                    {
+                        if (index < 0 || index >= array.Length)
+                            throw new Exception($"Array index {index} out of bounds (length: {array.Length})");
+                        currentObject = array.GetValue(index);
+                    }
+                    else if (currentObject is System.Collections.IList list)
+                    {
+                        if (index < 0 || index >= list.Count)
+                            throw new Exception($"List index {index} out of bounds (count: {list.Count})");
+                        currentObject = list[index];
+                    }
+                    else
+                    {
+                        throw new Exception($"Object is not an array or list: {currentType.Name}");
+                    }
+
+                    currentType = currentObject?.GetType();
+                }
+                else
+                {
+                    // 普通属性访问
+                    currentObject = GetPropertyOrFieldValue(currentObject, currentType, part, includeInherited);
+                    currentType = currentObject?.GetType();
+                }
+            }
+
+            return currentObject;
+        }
+
+        /// <summary>
+        /// 分割属性路径，支持点号和数组访问
+        /// 例如: "position.x" -> ["position", "x"]
+        ///       "materials[0].name" -> ["materials[0]", "name"]
+        /// </summary>
+        private string[] SplitPropertyPath(string path)
+        {
+            var parts = new List<string>();
+            var currentPart = new StringBuilder();
+            int bracketDepth = 0;
+
+            foreach (char c in path)
+            {
+                if (c == '[')
+                {
+                    bracketDepth++;
+                    currentPart.Append(c);
+                }
+                else if (c == ']')
+                {
+                    bracketDepth--;
+                    currentPart.Append(c);
+                }
+                else if (c == '.' && bracketDepth == 0)
+                {
+                    if (currentPart.Length > 0)
+                    {
+                        parts.Add(currentPart.ToString());
+                        currentPart.Clear();
+                    }
+                }
+                else
+                {
+                    currentPart.Append(c);
+                }
+            }
+
+            if (currentPart.Length > 0)
+            {
+                parts.Add(currentPart.ToString());
+            }
+
+            return parts.ToArray();
+        }
+
+        /// <summary>
+        /// 获取对象的属性或字段值
+        /// </summary>
+        private object GetPropertyOrFieldValue(object obj, Type type, string name, bool includeInherited)
+        {
+            BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            if (!includeInherited)
+            {
+                flags |= BindingFlags.DeclaredOnly;
+            }
+
+            // 尝试作为属性
+            PropertyInfo property = type.GetProperty(name, flags);
+            if (property != null && property.CanRead)
+            {
+                return property.GetValue(obj);
+            }
+
+            // 尝试作为字段
+            FieldInfo field = type.GetField(name, flags);
+            if (field != null)
+            {
+                // 检查是否是公开字段或有 SerializeField 特性
+                bool isPublic = field.IsPublic;
+                bool hasSerializeField = field.GetCustomAttribute<SerializeField>() != null;
+
+                if (isPublic || hasSerializeField)
+                {
+                    return field.GetValue(obj);
+                }
+            }
+
+            throw new Exception($"Property or field '{name}' not found or not accessible on type '{type.Name}'");
         }
 
         /// <summary>
@@ -324,6 +531,10 @@ namespace UnityAIStudio.McpServer.Tools
         {
             if (value == null)
                 return "null";
+
+            // 如果类型未知，使用实际值的类型
+            if (propertyType == null)
+                propertyType = value.GetType();
 
             // 基本类型
             if (propertyType.IsPrimitive || propertyType == typeof(string))
