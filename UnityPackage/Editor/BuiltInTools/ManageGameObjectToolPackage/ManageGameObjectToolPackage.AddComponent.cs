@@ -18,7 +18,7 @@ namespace UnityAIStudio.McpServer.Tools
         /// 向 Prefab 中的 GameObject 添加组件
         /// </summary>
         [McpTool(
-            Description = "Add a component to a GameObject in a Prefab. Supports all Unity built-in components and custom MonoBehaviour scripts.",
+            Description = "Add components to a GameObject in a Prefab. IMPORTANT: Always add multiple components in a single call using comma-separated names (e.g., 'BoxCollider,Rigidbody,MeshRenderer') for better performance. Supports all Unity built-in components and custom MonoBehaviour scripts.",
             Category = "Component Management"
         )]
         public async Task<CallToolResult> AddComponentToPrefab(
@@ -28,7 +28,7 @@ namespace UnityAIStudio.McpServer.Tools
             [McpParameter("Hierarchy path to the GameObject to add component to (e.g., 'Parent/Child'). Leave empty for root GameObject.")]
             [TrimProcessor]
             string gameObjectPath = "",
-            [McpParameter("Type name of the component to add (e.g., 'BoxCollider', 'Rigidbody', 'MeshRenderer'). For custom scripts, use the full type name.")]
+            [McpParameter("Component type names, comma-separated for batch adding (e.g., 'BoxCollider,Rigidbody,MeshRenderer'). Single component example: 'BoxCollider'. For custom scripts, use the full type name.")]
             [TrimProcessor]
             string componentTypeName = null,
             CancellationToken ct = default)
@@ -79,42 +79,88 @@ namespace UnityAIStudio.McpServer.Tools
 
                         GameObject targetObject = targetTransform.gameObject;
 
-                        // 查找组件类型
-                        Type componentType = FindComponentType(componentTypeName);
-                        if (componentType == null)
-                        {
-                            return McpUtils.Error(
-                                $"Component type '{componentTypeName}' not found.\n" +
-                                $"Make sure the type name is correct and the assembly is loaded.\n" +
-                                $"For custom scripts, try using the full namespace (e.g., 'MyNamespace.MyComponent').");
-                        }
+                        // 分割多个组件类型名称
+                        string[] typeNames = componentTypeName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        var addedComponents = new System.Collections.Generic.List<Component>();
+                        var errors = new System.Collections.Generic.List<string>();
 
-                        // 检查是否已经有该组件
-                        if (targetObject.GetComponent(componentType) != null)
+                        foreach (string typeName in typeNames)
                         {
-                            return McpUtils.Error(
-                                $"GameObject '{targetObject.name}' already has a component of type '{componentType.Name}'.\n" +
-                                $"Remove it first if you want to add a new one.");
-                        }
+                            string trimmedTypeName = typeName.Trim();
+                            if (string.IsNullOrEmpty(trimmedTypeName))
+                                continue;
 
-                        // 添加组件
-                        Component addedComponent = targetObject.AddComponent(componentType);
+                            // 查找组件类型
+                            Type componentType = FindComponentType(trimmedTypeName);
+                            if (componentType == null)
+                            {
+                                errors.Add($"Component type '{trimmedTypeName}' not found.");
+                                continue;
+                            }
 
-                        if (addedComponent == null)
-                        {
-                            return McpUtils.Error($"Failed to add component '{componentType.Name}' to GameObject '{targetObject.name}'.");
+                            // 检查是否已经有该组件
+                            if (targetObject.GetComponent(componentType) != null)
+                            {
+                                errors.Add($"GameObject already has component '{componentType.Name}'.");
+                                continue;
+                            }
+
+                            // 添加组件
+                            Component addedComponent = targetObject.AddComponent(componentType);
+
+                            if (addedComponent == null)
+                            {
+                                errors.Add($"Failed to add component '{componentType.Name}'.");
+                                continue;
+                            }
+
+                            addedComponents.Add(addedComponent);
                         }
 
                         // 保存修改后的 Prefab
-                        PrefabUtility.SaveAsPrefabAsset(prefabContentsRoot, assetPath);
+                        if (addedComponents.Count > 0)
+                        {
+                            PrefabUtility.SaveAsPrefabAsset(prefabContentsRoot, assetPath);
+                        }
 
                         string targetPathDisplay = string.IsNullOrWhiteSpace(gameObjectPath) ? "(root)" : gameObjectPath;
 
-                        return McpUtils.Success(
-                            $"Successfully added component '{componentType.Name}' to GameObject.\n" +
-                            $"GameObject path: {targetPathDisplay}\n" +
-                            $"Component type: {componentType.FullName}\n" +
-                            $"Prefab saved at: {assetPath}");
+                        // 构建结果消息
+                        var resultBuilder = new System.Text.StringBuilder();
+
+                        if (addedComponents.Count > 0)
+                        {
+                            resultBuilder.AppendLine($"Successfully added {addedComponents.Count} component(s) to GameObject.");
+                            resultBuilder.AppendLine($"GameObject path: {targetPathDisplay}");
+                            resultBuilder.AppendLine();
+                            resultBuilder.AppendLine("Added components:");
+                            foreach (var comp in addedComponents)
+                            {
+                                resultBuilder.AppendLine($"  - {comp.GetType().Name} ({comp.GetType().FullName})");
+                            }
+                            resultBuilder.AppendLine();
+                            resultBuilder.AppendLine($"Prefab saved at: {assetPath}");
+                        }
+
+                        if (errors.Count > 0)
+                        {
+                            if (addedComponents.Count > 0)
+                            {
+                                resultBuilder.AppendLine();
+                                resultBuilder.AppendLine("Warnings:");
+                            }
+                            foreach (var error in errors)
+                            {
+                                resultBuilder.AppendLine($"  - {error}");
+                            }
+                        }
+
+                        if (addedComponents.Count == 0)
+                        {
+                            return McpUtils.Error($"Failed to add any components:\n{string.Join("\n", errors)}");
+                        }
+
+                        return McpUtils.Success(resultBuilder.ToString());
                     }
                     finally
                     {
@@ -128,6 +174,8 @@ namespace UnityAIStudio.McpServer.Tools
                 }
             });
         }
+
+
 
         /// <summary>
         /// 查找组件类型（支持简单名称和完整名称）
